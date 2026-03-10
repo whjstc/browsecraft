@@ -214,3 +214,8 @@ browsecraft/
 ## License
 
 MIT
+
+## 发布参考
+
+- 发布流程：`docs/RELEASE-RUNBOOK.md`
+- Skill 资产：`SKILL.md`、`packages/skill/`

@@ -2,13 +2,19 @@
 
 ## 当前状态
 
-- ✅ **54 个 CLI 命令** - 对齐 agent-browser
+- ✅ **56 个 CLI 命令** - 已超出 agent-browser 的 50+ 命令规模
 - ✅ **模板缓存系统** - 减少 90% token 消耗
 - ✅ **指纹浏览器支持** - RoxyBrowser / Camoufox
 - ✅ **HTTP API** - REST 接口
-- ✅ **MCP Server** - Claude Desktop 集成（13 个工具）
+- ✅ **MCP Server** - Claude Desktop 集成（13 个工具，维持不扩张）
 - ✅ **语义定位** - find-role/find-text/find-label
 - ✅ **Bun 构建脚本** - 生成跨平台二进制（实验性）
+
+## 执行原则（2026-03-10 更新）
+
+1. **主战场是 CLI + Skill 分发**：先验证重复任务场景价值，不追求“形态齐全”。
+2. **MCP 进入维护态**：只修 bug，不做 13→54 工具补齐。
+3. **先单渠道打穿再复制**：skills.sh → clawhub.ai → playbooks.com，按顺序推进。
 
 ## 剩余功能规划
 
@@ -17,17 +23,20 @@
 | 功能 | 说明 | 工作量 | 状态 |
 |------|------|--------|------|
 | **发布 npm** | `browsecraft` + `@browsecraft/core` + `@browsecraft/http-api` + `@browsecraft/mcp-server` | 30 分钟 | ⏳ 待做 |
-| **README 更新** | 补充 54 个命令文档、安装指引、快速开始 | 30 分钟 | ⏳ 待做 |
+| **发布预检脚本** | `scripts/release-preflight.sh`（help + pack dry-run + 清理） | 15 分钟 | ✅ 已完成 |
+| **README 更新** | 命令数量、已完成能力、待发布能力拆分清楚 | 30 分钟 | ✅ 已完成 |
+| **Skill 包骨架** | 建立 `packages/skill`，沉淀统一 prompt / metadata / 示例 | 1 小时 | ✅ 已完成 |
+| **最小验证闭环** | 产出 1 个可复现 demo（安装→运行→结果） | 1 小时 | ✅ 已完成 |
 
 ### P1 - 生态集成（1-2 周）
 
 | 功能 | 说明 | 工作量 | 状态 |
 |------|------|--------|------|
 | **发布 skills.sh** | 提交 skill 定义到 skills.sh registry | 1 小时 | ⏳ 待做 |
-| **发布 playbooks.com** | 提交到 playbooks skill marketplace | 1 小时 | ⏳ 待做 |
 | **发布 clawhub.ai** | OpenClaw 生态集成 | 1 小时 | ⏳ 待做 |
+| **发布 playbooks.com** | 提交到 playbooks skill marketplace | 1 小时 | ⏳ 待做 |
 | **Homebrew tap** | `brew install browsecraft/tap/browsecraft` | 30 分钟 | ⏳ 待做 |
-| **MCP Server 补全** | 从 13 个工具对齐到 54 个 | 1 小时 | ⏳ 待做 |
+| **Skill 兼容矩阵** | 记录三平台字段差异与适配策略 | 1 小时 | ⏳ 待做 |
 
 ### P2 - 功能增强（1 个月）
 
@@ -59,7 +68,7 @@
 | **指纹浏览器** | ✅ RoxyBrowser/Camoufox | ❌ | ❌ |
 | **多产品形态** | ✅ CLI + HTTP + MCP + Skill | CLI only | MCP only |
 | **Token 成本** | ~68 (CLI) / ~3,600 (MCP) | ~68 | ~3,600 |
-| **命令数量** | 54 | 50+ | ~15 |
+| **命令数量** | 56 | 50+ | ~15 |
 
 ### 目标用户场景
 
@@ -102,11 +111,11 @@
 | Bun 二进制 WebSocket 兼容 | 独立二进制不可用 | P3（等上游修复） |
 | 缺少单元测试 | 代码质量 | P2 |
 | 缺少集成测试 | 稳定性 | P2 |
-| MCP Server 工具不全 | 功能完整性 | P1 |
+| Skill 平台规范差异 | 上架效率与可维护性 | P1 |
 
 ## 成功指标
 
-- **1 周内**: npm 发布 + 上架 3 个 skill marketplace
+- **1 周内**: npm 发布 + skills.sh 首发 + 1 个可复现 demo
 - **1 个月内**: 50+ GitHub stars
 - **3 个月内**: 100+ weekly npm downloads
 - **6 个月内**: 500+ stars，进入 Homebrew core
