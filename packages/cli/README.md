@@ -26,7 +26,7 @@ browsecraft start
 browsecraft open https://example.com
 
 # 3. 获取无障碍快照
-browsecraft snapshot > page.yaml
+browsecraft snapshot -i -c -d 6 > page.yaml
 
 # 4. 通过 ref 点击元素
 browsecraft click-ref e2
@@ -63,9 +63,16 @@ browsecraft stop
 
 ### 快照（基于 ref）
 
-- `browsecraft snapshot` - 捕获无障碍快照
+- `browsecraft snapshot [-i] [-c] [-d depth]` - 捕获无障碍快照
 - `browsecraft click-ref <ref>` - 通过 ref 点击
 - `browsecraft fill-ref <ref> <text>` - 通过 ref 填写
+
+### Tab 管理
+
+- `browsecraft tab list` - 列出当前标签页
+- `browsecraft tab new [url]` - 新建标签页
+- `browsecraft tab switch <index>` - 切换活动标签页
+- `browsecraft tab close [index]` - 关闭标签页
 
 ### 检查（退出码：0=pass, 1=fail, 2=error）
 
@@ -86,9 +93,11 @@ browsecraft stop
 
 - `--local` - 使用项目级会话（`./.browsecraft/`）
 - `--global` - 使用全局会话（`~/.browsecraft/`）[默认]
+- `--session` - 会话名（隔离状态文件）
 - `--type` - 浏览器类型（chrome|roxy|camoufox）
 - `--headless` - 无头模式
 - `--camoufox-path` - Camoufox 可执行文件路径（也可用 `CAMOUFOX_PATH`）
+- `BROWSECRAFT_MAX_TABS` - 每个 context 保留的最大标签页数量（默认 8）
 
 ## 退出码
 

@@ -14,41 +14,41 @@ export class SnapshotManager {
    * @param {Page} page - Playwright Page 对象
    * @param {Object} options - 配置选项
    * @param {boolean} options.interestingOnly - 仅包含可交互元素（默认 true）
+   * @param {boolean} options.compact - 紧凑输出（默认 false）
+   * @param {number} options.maxDepth - 最大 DOM 深度（默认 8）
    * @returns {Promise<{yaml: string, refMap: Map}>}
    */
   async capture(page, options = {}) {
-    const { interestingOnly = true } = options
+    const { interestingOnly = true, compact = false, maxDepth = 8 } = options
 
     // 使用 evaluate 获取可交互元素（兼容 CDP 连接）
-    const elements = await page.evaluate(() => {
-      function getInteractiveElements() {
+    const elements = await page.evaluate(({ interestingOnly, maxDepth }) => {
+      function getSnapshotElements() {
         const elements = []
-        const selectors = [
-          'a[href]',
-          'button',
-          'input:not([type="hidden"])',
-          'select',
-          'textarea',
-          '[role="button"]',
-          '[role="link"]',
-          '[role="textbox"]',
-          '[role="checkbox"]',
-          '[role="radio"]',
-          '[role="tab"]',
-          '[role="menuitem"]',
-        ]
+        const queue = [{ node: document.body, depth: 0 }]
+        const isInteractiveElement = (el) => {
+          const tag = el.tagName?.toLowerCase()
+          if (!tag) return false
+          const interactiveTags = ['a', 'button', 'input', 'select', 'textarea', 'summary']
+          if (interactiveTags.includes(tag)) return true
+          const role = el.getAttribute('role')
+          if (role && ['button', 'link', 'textbox', 'checkbox', 'radio', 'tab', 'menuitem'].includes(role)) {
+            return true
+          }
+          return !!(el.onclick || el.hasAttribute('contenteditable'))
+        }
 
-        const seen = new Set()
-
-        for (const selector of selectors) {
-          const els = document.querySelectorAll(selector)
-          for (const el of els) {
-            if (seen.has(el)) continue
-            seen.add(el)
-
+        while (queue.length > 0) {
+          const { node, depth } = queue.shift()
+          if (!node || depth > maxDepth) continue
+          if (node !== document.body) {
+            const el = /** @type {HTMLElement} */ (node)
             const rect = el.getBoundingClientRect()
             if (rect.width === 0 || rect.height === 0) continue
 
+            if (interestingOnly && !isInteractiveElement(el)) {
+              // skip
+            } else {
             const text = el.getAttribute('aria-label') ||
                          el.title ||
                          el.innerText?.slice(0, 100) ||
@@ -57,11 +57,11 @@ export class SnapshotManager {
                          ''
 
             // 生成唯一 selector
-            let uniqueSelector = selector
+            let uniqueSelector = el.tagName.toLowerCase()
             if (el.id) {
               uniqueSelector = `#${el.id}`
             } else if (el.className) {
-              const classes = el.className.split(' ').filter(c => c).join('.')
+              const classes = String(el.className).split(' ').filter(c => c).slice(0, 3).join('.')
               if (classes) uniqueSelector = `${el.tagName.toLowerCase()}.${classes}`
             }
 
@@ -71,15 +71,23 @@ export class SnapshotManager {
               name: text.trim(),
               selector: uniqueSelector,
               type: el.type || null,
+              depth,
             })
+            }
+          }
+
+          if (node.children && node.children.length > 0) {
+            for (const child of node.children) {
+              queue.push({ node: child, depth: depth + 1 })
+            }
           }
         }
 
         return elements
       }
 
-      return getInteractiveElements()
-    })
+      return getSnapshotElements()
+    }, { interestingOnly, maxDepth })
 
     // 重置 ref 计数器
     this.refCounter = 0
@@ -94,7 +102,11 @@ export class SnapshotManager {
 
       const name = el.name ? ` "${el.name}"` : ''
       const type = el.type ? ` (${el.type})` : ''
-      yaml += `- ${el.role}${name}${type} [${ref}]\n`
+      if (compact) {
+        yaml += `- ${el.role} [${ref}] ${el.selector}\n`
+      } else {
+        yaml += `- ${el.role}${name}${type} [${ref}] (d=${el.depth})\n`
+      }
     }
 
     return {

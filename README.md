@@ -25,7 +25,7 @@ browsecraft start
 browsecraft open https://example.com
 
 # 获取无障碍快照（带 ref）
-browsecraft snapshot > page.yaml
+browsecraft snapshot -i -c -d 6 > page.yaml
 
 # 通过 ref 点击元素
 browsecraft click-ref e2
@@ -105,6 +105,25 @@ browsecraft stop
 ```
 
 AI Agent 只需 ~68 tokens 了解所有命令。
+
+### 1.1 多会话与 Tab 管理
+```bash
+# 隔离会话（不同 state 文件）
+browsecraft --session sales start
+browsecraft --session ops start
+
+# tab 管理
+browsecraft tab list
+browsecraft tab new https://example.com
+browsecraft tab switch 2
+browsecraft tab close 2
+```
+
+可通过环境变量限制标签页数量，避免内存被意外占满：
+
+```bash
+export BROWSECRAFT_MAX_TABS=8
+```
 
 ### 2. HTTP API
 ```bash

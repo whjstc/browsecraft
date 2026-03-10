@@ -42,11 +42,11 @@
 
 | 功能 | 说明 | 工作量 | 状态 |
 |------|------|--------|------|
-| **snapshot 增强** | `-i` 仅交互元素 / `-c` 紧凑模式 / `-d` 深度限制 | 30 分钟 | ⏳ 待做 |
+| **snapshot 增强** | `-i` 仅交互元素 / `-c` 紧凑模式 / `-d` 深度限制 | 30 分钟 | ✅ 已完成 |
 | **`--json` 输出** | 所有命令支持 JSON 输出，方便程序解析 | 30 分钟 | ⏳ 待做 |
-| **`--session` 多会话** | 并行运行多个浏览器实例 | 1 小时 | ⏳ 待做 |
+| **`--session` 多会话** | 并行运行多个浏览器实例 | 1 小时 | ✅ 已完成 |
 | **模板缓存 CLI** | `browsecraft template learn/execute/list/delete` | 30 分钟 | ⏳ 待做 |
-| **tab/frame 管理** | `tab new/close/switch`、`frame switch` | 30 分钟 | ⏳ 待做 |
+| **tab/frame 管理** | `tab new/close/switch`、`frame switch` | 30 分钟 | 🚧 部分完成（tab 已完成，frame 待做） |
 
 ### P3 - 高级特性（2-3 个月）
 

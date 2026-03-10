@@ -18,6 +18,7 @@ import * as find from './commands/find.js'
 import * as get from './commands/get.js'
 import * as settings from './commands/settings.js'
 import * as cfg from './commands/config.js'
+import * as tab from './commands/tab.js'
 
 // 命令映射
 const commands = {
@@ -98,6 +99,9 @@ const commands = {
   'get-storage': settings.getStorage,
   'set-storage': settings.setStorage,
   pdf: settings.pdf,
+
+  // tab 管理 (1)
+  tab: tab.tab,
 }
 
 // 帮助文档
@@ -136,7 +140,7 @@ Interaction:
   browsecraft highlight <selector>
 
 Snapshot (ref-based):
-  browsecraft snapshot
+  browsecraft snapshot [-i] [-c] [-d depth]
   browsecraft click-ref <ref>
   browsecraft fill-ref <ref> <text>
 
@@ -179,6 +183,12 @@ Settings & Storage:
   browsecraft get-storage <key>
   browsecraft set-storage <key> <value>
 
+Tab Management:
+  browsecraft tab list
+  browsecraft tab new [url]
+  browsecraft tab switch <index>
+  browsecraft tab close [index]
+
 Config:
   browsecraft config show
   browsecraft config set <KEY> <VALUE>
@@ -188,6 +198,7 @@ Config:
 Options:
   --local   Use project-local session (./.browsecraft/)
   --global  Use global session (~/.browsecraft/) [default]
+  --session Session name for multi-session isolation
   --type    Browser type (chrome|roxy|camoufox)
   --headless  Run in headless mode
   --roxy-api      RoxyBrowser API URL (default: http://127.0.0.1:50000)
@@ -195,6 +206,7 @@ Options:
   --roxy-window-id    RoxyBrowser window/dir ID to open
   --roxy-workspace-id RoxyBrowser workspace ID
   --camoufox-path     Camoufox executable path (or use CAMOUFOX_PATH env)
+  BROWSECRAFT_MAX_TABS  Max tabs kept per context (default: 8, 0 means unlimited)
 
 Exit codes:
   0  Success
@@ -211,6 +223,7 @@ async function main() {
     options: {
       local: { type: 'boolean' },
       global: { type: 'boolean' },
+      session: { type: 'string' },
       type: { type: 'string' },
       headless: { type: 'boolean' },
       timeout: { type: 'string' },
@@ -227,6 +240,10 @@ async function main() {
 
   const cmd = positionals[0]
   const args = positionals.slice(1)
+
+  if (values.session) {
+    process.env.BROWSECRAFT_SESSION = values.session
+  }
 
   // 显示帮助
   if (values.help || !cmd || cmd === 'help') {

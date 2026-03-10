@@ -112,6 +112,7 @@ export async function start(args, options) {
   await saveState({
     cdpEndpoint: wsEndpoint,
     browserType,
+    activeTabIndex: 0,
     pid: child.pid,
     dataDir,
     scope: local ? 'local' : 'global',
@@ -189,6 +190,7 @@ async function startCamoufox(options, local) {
   await saveState({
     cdpEndpoint: wsEndpoint,
     browserType: 'camoufox',
+    activeTabIndex: 0,
     pid: child.pid,
     camoufoxPath: camoufoxPath || undefined,
     scope: local ? 'local' : 'global',
@@ -263,6 +265,7 @@ export async function connect(args, options) {
   await saveState({
     cdpEndpoint: wsEndpoint,
     browserType,
+    activeTabIndex: 0,
     scope: local ? 'local' : 'global',
     connectedAt: new Date().toISOString(),
   }, local)
@@ -389,6 +392,7 @@ async function startRoxy(options, local) {
   await saveState({
     cdpEndpoint: wsEndpoint,
     browserType: 'roxy',
+    activeTabIndex: 0,
     roxyApi: apiBase,
     roxyWindowId: dirId,
     scope: local ? 'local' : 'global',

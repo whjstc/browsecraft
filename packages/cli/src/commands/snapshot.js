@@ -10,8 +10,16 @@ import { saveState, loadState } from '../state.js'
  */
 export async function snapshot(args, options) {
   const { page, snapshot: snapshotManager } = await withPage(options.local)
+  const interestingOnly = args.includes('-i') || args.includes('--interactive')
+  const compact = args.includes('-c') || args.includes('--compact')
+  const depthArgIndex = args.findIndex(a => a === '-d' || a === '--depth')
+  const maxDepth = depthArgIndex >= 0 ? Number.parseInt(args[depthArgIndex + 1], 10) : 8
 
-  const result = await snapshotManager.capture(page)
+  const result = await snapshotManager.capture(page, {
+    interestingOnly,
+    compact,
+    maxDepth: Number.isFinite(maxDepth) && maxDepth > 0 ? maxDepth : 8,
+  })
 
   // 保存 refMap 到状态（用于后续 click-ref）
   const state = await loadState(options.local)
@@ -21,7 +29,7 @@ export async function snapshot(args, options) {
   }
   await saveState(state, options.local)
 
-  console.log(result.yaml)
+  console.log(result.yaml.trimEnd())
 }
 
 /**

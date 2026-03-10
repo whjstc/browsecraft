@@ -6,17 +6,28 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
 
+function normalizeSessionName(sessionName) {
+  const name = (sessionName || process.env.BROWSECRAFT_SESSION || 'default').trim()
+  const normalized = name.replace(/[^a-zA-Z0-9_-]/g, '_')
+  return normalized || 'default'
+}
+
 /**
  * 获取状态文件路径
  * @param {boolean} local - 是否使用本地状态（项目级）
  * @returns {string} 状态文件路径
  */
 export function getStatePath(local = false) {
+  const sessionName = normalizeSessionName()
   const dir = local
     ? path.join(process.cwd(), '.browsecraft')
     : path.join(os.homedir(), '.browsecraft')
 
-  return path.join(dir, 'state.json')
+  if (sessionName === 'default') {
+    return path.join(dir, 'state.json')
+  }
+
+  return path.join(dir, `state-${sessionName}.json`)
 }
 
 /**

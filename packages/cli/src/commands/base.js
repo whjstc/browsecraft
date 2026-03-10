@@ -24,6 +24,13 @@ export async function withPage(local = false) {
 
   await connector.connect()
 
+  const context = connector.getPage()?.context()
+  const pages = context ? context.pages() : []
+  const activeTabIndex = Number.isInteger(state.activeTabIndex) ? state.activeTabIndex : 0
+  if (pages[activeTabIndex]) {
+    connector.page = pages[activeTabIndex]
+  }
+
   const actions = new BrowserActions(connector)
   const snapshot = new SnapshotManager()
 

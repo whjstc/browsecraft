@@ -26,6 +26,7 @@ export class BrowserConnector {
       roxyWorkspaceId: options.roxyWorkspaceId || 1,
       headless: options.headless ?? false,
       timeout: options.timeout || 30000,
+      maxTabs: options.maxTabs ?? Number.parseInt(process.env.BROWSECRAFT_MAX_TABS || '8', 10),
     }
 
     this.browser = null
@@ -204,9 +205,38 @@ export class BrowserConnector {
   async _setupPage() {
     const contexts = this.browser.contexts()
     this.context = contexts[0] || await this.browser.newContext()
+    this._bindTabGuard()
 
     const pages = this.context.pages()
     this.page = pages[0] || await this.context.newPage()
+    await this._enforceTabLimit()
+  }
+
+  _bindTabGuard() {
+    if (this._tabGuardBound || !this.context) return
+    this._tabGuardBound = true
+    this.context.on('page', () => {
+      this._enforceTabLimit().catch(() => {})
+    })
+  }
+
+  async _enforceTabLimit() {
+    const maxTabs = Number(this.options.maxTabs)
+    if (!Number.isFinite(maxTabs) || maxTabs <= 0) return
+
+    const pages = this.context.pages()
+    if (pages.length <= maxTabs) return
+
+    const overflowCount = pages.length - maxTabs
+    const overflowPages = pages.slice(0, overflowCount)
+    for (const extraPage of overflowPages) {
+      await extraPage.close().catch(() => {})
+    }
+
+    if (this.page && this.page.isClosed()) {
+      const remained = this.context.pages()
+      this.page = remained[0] || null
+    }
   }
 
   /**
