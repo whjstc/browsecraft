@@ -55,6 +55,8 @@ coverage/
 *.tsbuildinfo
 
 # Internal docs (do not publish)
+AGENTS.md
+CLAUDE.md
 ROADMAP.md
 IMPLEMENTATION.md
 CLI-TEST-REPORT.md
