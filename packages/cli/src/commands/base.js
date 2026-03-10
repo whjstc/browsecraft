@@ -27,17 +27,25 @@ export async function withPage(local = false) {
   const context = connector.getPage()?.context()
   const pages = context ? context.pages() : []
   const activeTabIndex = Number.isInteger(state.activeTabIndex) ? state.activeTabIndex : 0
-  if (pages[activeTabIndex]) {
-    connector.page = pages[activeTabIndex]
+  const activePage = pages[activeTabIndex] || connector.getPage()
+  if (activePage) connector.page = activePage
+
+  let activeFrame = null
+  if (activePage && Number.isInteger(state.activeFrameIndex)) {
+    const frames = activePage.frames()
+    if (frames[state.activeFrameIndex]) {
+      activeFrame = frames[state.activeFrameIndex]
+    }
   }
 
-  const actions = new BrowserActions(connector)
+  const actions = new BrowserActions(connector, activeFrame)
   const snapshot = new SnapshotManager()
 
   return {
     state,
     connector,
     page: connector.getPage(),
+    frame: activeFrame,
     actions,
     snapshot,
   }

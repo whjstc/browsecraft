@@ -7,11 +7,16 @@
 import { retryWithBackoff, smartWait, dismissCookieBanner } from './utils.js'
 
 export class BrowserActions {
-  constructor(connector) {
+  constructor(connector, targetFrame = null) {
     this.connector = connector
+    this.targetFrame = targetFrame
   }
 
   get page() {
+    return this.targetFrame || this.connector.getPage()
+  }
+
+  get rootPage() {
     return this.connector.getPage()
   }
 
@@ -23,7 +28,7 @@ export class BrowserActions {
       waitUntil: options.waitUntil || 'domcontentloaded',
       timeout: options.timeout || 30000,
     })
-    return { url: this.page.url(), title: await this.page.title() }
+    return { url: this.page.url(), title: await this.rootPage.title() }
   }
 
   /**
@@ -32,7 +37,7 @@ export class BrowserActions {
   async getInfo() {
     return {
       url: this.page.url(),
-      title: await this.page.title(),
+      title: await this.rootPage.title(),
     }
   }
 
@@ -76,7 +81,7 @@ export class BrowserActions {
    * 截图
    */
   async screenshot(path, options = {}) {
-    const buffer = await this.page.screenshot({
+    const buffer = await this.rootPage.screenshot({
       path,
       fullPage: options.fullPage || false,
       type: options.type || 'png',
@@ -162,7 +167,7 @@ export class BrowserActions {
    * 按键
    */
   async press(key) {
-    await this.page.keyboard.press(key)
+    await this.rootPage.keyboard.press(key)
     return { action: 'press', key }
   }
 
@@ -170,7 +175,7 @@ export class BrowserActions {
    * 等待指定时间
    */
   async wait(ms) {
-    await this.page.waitForTimeout(ms)
+    await this.rootPage.waitForTimeout(ms)
     return { action: 'wait', ms }
   }
 

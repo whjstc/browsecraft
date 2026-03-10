@@ -8,6 +8,8 @@ node_modules/
 .browsecraft/
 .turbo/
 .npm/
+.npm-cache/
+.templates/
 
 # Environment
 .env
@@ -50,3 +52,10 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+
+# Internal docs (do not publish)
+ROADMAP.md
+IMPLEMENTATION.md
+CLI-TEST-REPORT.md
+docs/RELEASE-STATUS.md
+docs/RELEASE-RUNBOOK.md

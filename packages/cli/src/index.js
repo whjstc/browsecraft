@@ -20,6 +20,7 @@ import * as settings from './commands/settings.js'
 import * as cfg from './commands/config.js'
 import * as tab from './commands/tab.js'
 import * as template from './commands/template.js'
+import * as frame from './commands/frame.js'
 
 // 命令映射
 const commands = {
@@ -103,6 +104,9 @@ const commands = {
 
   // tab 管理 (1)
   tab: tab.tab,
+
+  // frame 管理 (1)
+  frame: frame.frame,
 
   // 模板缓存 (1)
   template: template.template,
@@ -192,6 +196,11 @@ Tab Management:
   browsecraft tab new [url]
   browsecraft tab switch <index>
   browsecraft tab close [index]
+
+Frame Management:
+  browsecraft frame list
+  browsecraft frame switch <index>
+  browsecraft frame clear
 
 Template:
   browsecraft template learn <name> <urlPattern> <key=selector...>
