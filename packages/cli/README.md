@@ -64,6 +64,8 @@ browsecraft stop
 ## Workflow
 
 - `browsecraft workflow run <file.yml> [key=value ...]`
+- `browsecraft workflow validate <file.yml> [key=value ...]`
+- `browsecraft workflow dry-run <file.yml> [key=value ...]`
 
 ## Options
 

@@ -94,6 +94,8 @@ steps:
 ```
 
 ```bash
+browsecraft workflow validate workflows/linkedin.yml keyword="founder shanghai saas"
+browsecraft workflow dry-run workflows/linkedin.yml keyword="founder shanghai saas"
 browsecraft workflow run workflows/linkedin.yml keyword="founder shanghai saas"
 ```
 

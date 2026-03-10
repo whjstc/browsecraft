@@ -91,13 +91,13 @@ async function runStep(step, options, vars) {
 
 export async function workflow(args, options) {
   const sub = args[0]
-  if (sub !== 'run') {
-    throw new Error('Usage: browsecraft workflow run <file.yml> [key=value ...]')
+  if (!['run', 'validate', 'dry-run'].includes(sub)) {
+    throw new Error('Usage: browsecraft workflow <run|validate|dry-run> <file.yml> [key=value ...]')
   }
 
   const file = args[1]
   if (!file) {
-    throw new Error('Usage: browsecraft workflow run <file.yml> [key=value ...]')
+    throw new Error('Usage: browsecraft workflow <run|validate|dry-run> <file.yml> [key=value ...]')
   }
 
   const filePath = path.resolve(process.cwd(), file)
@@ -117,10 +117,29 @@ export async function workflow(args, options) {
     ...parseVars(args.slice(2)),
   }
 
-  for (let index = 0; index < steps.length; index++) {
-    const raw = steps[index]
-    const step = applyTemplate(raw, vars)
-    console.log(`→ [${index + 1}/${steps.length}] ${step.name || step.action}`)
+  const resolvedSteps = steps.map(step => applyTemplate(step, vars))
+
+  if (sub === 'validate') {
+    resolvedSteps.forEach((step, index) => {
+      if (!step.action) {
+        throw new Error(`Step ${index + 1} missing action`)
+      }
+    })
+    console.log(`Workflow valid: ${doc.name || path.basename(filePath)} (${resolvedSteps.length} steps)`)
+    return
+  }
+
+  if (sub === 'dry-run') {
+    for (let index = 0; index < resolvedSteps.length; index++) {
+      const step = resolvedSteps[index]
+      console.log(`[${index + 1}] ${step.name || step.action} -> ${step.action}`)
+    }
+    return
+  }
+
+  for (let index = 0; index < resolvedSteps.length; index++) {
+    const step = resolvedSteps[index]
+    console.log(`→ [${index + 1}/${resolvedSteps.length}] ${step.name || step.action}`)
     await runStep(step, options, vars)
   }
 
