@@ -22,7 +22,7 @@
 
 | 功能 | 说明 | 工作量 | 状态 |
 |------|------|--------|------|
-| **发布 npm** | `browsecraft` + `@browsecraft/core` + `@browsecraft/http-api` + `@browsecraft/mcp-server` | 30 分钟 | ⏳ 待做 |
+| **发布 npm** | `browsecraft` + `@browsecraft/core` + `@browsecraft/http-api` + `@browsecraft/mcp-server` | 30 分钟 | ⛔ 阻塞（需 2FA OTP 或 bypass token） |
 | **发布预检脚本** | `scripts/release-preflight.sh`（help + pack dry-run + 清理） | 15 分钟 | ✅ 已完成 |
 | **README 更新** | 命令数量、已完成能力、待发布能力拆分清楚 | 30 分钟 | ✅ 已完成 |
 | **Skill 包骨架** | 建立 `packages/skill`，沉淀统一 prompt / metadata / 示例 | 1 小时 | ✅ 已完成 |

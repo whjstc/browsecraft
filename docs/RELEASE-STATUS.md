@@ -12,6 +12,7 @@
 
 - `frame switch` 尚未实现（ROADMAP 对应项部分完成）。
 - 浏览器真实 E2E 场景（Roxy/Camoufox/Chrome）尚未在本机全量回归。
+- npm 发布被策略拦截：账号需要 **2FA OTP** 或“可绕过 2FA 的 granular access token”。
 
 ## 待执行命令（按顺序）
 
