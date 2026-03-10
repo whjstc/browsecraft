@@ -17,7 +17,7 @@ Browser automation CLI for repeatable AI-agent workflows.
 ## Install
 
 ```bash
-npm install -g browsecraft
+npm install -g browsecraft-cli
 ```
 
 ## Core Workflow

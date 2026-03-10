@@ -4,7 +4,7 @@
 
 import os from 'node:os'
 import path from 'node:path'
-import { TemplateManager } from '@browsecraft/core'
+import { TemplateManager } from 'browsecraft-core'
 import { withPage } from './base.js'
 
 function getTemplateDir(local = false) {

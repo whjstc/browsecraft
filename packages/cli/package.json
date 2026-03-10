@@ -1,13 +1,13 @@
 {
-  "name": "browsecraft",
-  "version": "0.1.0",
+  "name": "browsecraft-cli",
+  "version": "0.1.1",
   "type": "module",
   "description": "Browser automation CLI for AI agents - minimal token cost (~68 tokens)",
   "bin": {
     "browsecraft": "./src/index.js"
   },
   "dependencies": {
-    "@browsecraft/core": "*",
+    "browsecraft-core": "*",
     "js-yaml": "^4.1.0"
   },
   "scripts": {

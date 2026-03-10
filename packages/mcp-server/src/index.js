@@ -3,7 +3,7 @@
 /**
  * BrowseCraft MCP Server
  *
- * 基于 @browsecraft/core 的 MCP Server，为 Claude Desktop 设计
+ * 基于 browsecraft-core 的 MCP Server，为 Claude Desktop 设计
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
@@ -12,7 +12,7 @@ import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
-import { BrowserConnector, BrowserActions, SnapshotManager } from '@browsecraft/core'
+import { BrowserConnector, BrowserActions, SnapshotManager } from 'browsecraft-core'
 import { tools } from './tools.js'
 
 // 全局状态

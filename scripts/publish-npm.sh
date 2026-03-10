@@ -5,10 +5,10 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 PACKAGES=(
-  "@browsecraft/core"
-  "browsecraft"
-  "@browsecraft/http-api"
-  "@browsecraft/mcp-server"
+  "browsecraft-core"
+  "browsecraft-cli"
+  "browsecraft-http-api"
+  "browsecraft-mcp-server"
 )
 
 OTP_ARGS=()

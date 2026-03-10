@@ -2,7 +2,7 @@
  * 命令基础模块 - withPage 模式
  */
 
-import { BrowserConnector, BrowserActions, SnapshotManager } from '@browsecraft/core'
+import { BrowserConnector, BrowserActions, SnapshotManager } from 'browsecraft-core'
 import { loadState } from '../state.js'
 import { getFrameByIndex } from './frame-utils.js'
 

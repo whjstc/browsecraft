@@ -9,7 +9,7 @@
 
 import express from 'express'
 import bodyParser from 'body-parser'
-import { BrowserConnector, BrowserActions, TemplateManager } from '@browsecraft/core'
+import { BrowserConnector, BrowserActions, TemplateManager } from 'browsecraft-core'
 import { createTemplateRoutes } from './routes/template.js'
 import { createBrowserRoutes } from './routes/browser.js'
 

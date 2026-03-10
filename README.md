@@ -14,7 +14,7 @@ Universal browser automation for AI agents, optimized for repeatable workflows.
 ## Quick Start (CLI)
 
 ```bash
-npm install -g browsecraft
+npm install -g browsecraft-cli
 
 browsecraft start
 browsecraft open https://example.com

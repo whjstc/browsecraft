@@ -1,6 +1,6 @@
 {
   "name": "browsecraft",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Universal browser automation toolkit for AI agents. Supports CDP, Playwright, and multiple browser backends.",
   "keywords": ["browser", "automation", "ai-agent", "playwright", "cdp", "mcp", "openclaw"],
   "license": "MIT",
