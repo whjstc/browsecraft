@@ -11,8 +11,7 @@
   ],
   "scripts": {
     "dev": "node packages/cli/src/index.js",
-    "serve": "node packages/cli/src/index.js serve",
-    "build": "echo 'TODO: build step'",
+    "build": "bash scripts/build.sh",
     "test": "echo 'TODO: tests'"
   },
   "engines": {

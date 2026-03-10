@@ -12,23 +12,57 @@
 
 ## 快速开始
 
+### CLI 模式（推荐，最省 token）
+
 ```bash
 # 安装
 npm install -g browsecraft
 
+# 启动浏览器
+browsecraft start
+
+# 导航到网页
+browsecraft open https://example.com
+
+# 获取无障碍快照（带 ref）
+browsecraft snapshot > page.yaml
+
+# 通过 ref 点击元素
+browsecraft click-ref e2
+
+# 截图
+browsecraft screenshot result.png
+
+# 停止浏览器
+browsecraft stop
+```
+
+### HTTP API 模式
+
+```bash
 # 启动 HTTP API 服务器
-browsecraft serve --port 3000
+node packages/http-api/src/index.js
 
-# 连接已有浏览器 (CDP)
-browsecraft serve --cdp-port 54485
+# 通过 HTTP 调用
+curl -X POST http://localhost:3000/goto -d '{"url":"https://example.com"}'
+```
 
-# 作为 MCP Server
-browsecraft mcp
+### MCP Server 模式
 
-# 执行单次操作 (CLI 模式)
-browsecraft navigate https://example.com
-browsecraft screenshot output.png
-browsecraft click "button.submit"
+在 Claude Desktop 配置中添加：
+
+```json
+{
+  "mcpServers": {
+    "browsecraft": {
+      "command": "node",
+      "args": ["/path/to/browsecraft/packages/mcp-server/src/index.js"],
+      "env": {
+        "BROWSECRAFT_CDP_PORT": "9222"
+      }
+    }
+  }
+}
 ```
 
 ## 连接浏览器
@@ -56,19 +90,23 @@ browsecraft connect --type chrome --port 9222
 
 ### 1. CLI (最省 token, 推荐)
 ```bash
-browsecraft navigate https://linkedin.com
+browsecraft start
+browsecraft open https://linkedin.com
+browsecraft snapshot
+browsecraft click-ref e3
 browsecraft fill "input#email" "user@example.com"
 browsecraft click "button[type=submit]"
 browsecraft screenshot login-result.png
+browsecraft stop
 ```
 
 AI Agent 只需 ~68 tokens 了解所有命令。
 
 ### 2. HTTP API
 ```bash
-browsecraft serve --port 3000
+node packages/http-api/src/index.js
 
-# 然后通过 HTTP 调用
+# 通过 HTTP 调用
 curl -X POST http://localhost:3000/goto -d '{"url":"https://example.com"}'
 ```
 
@@ -77,8 +115,8 @@ curl -X POST http://localhost:3000/goto -d '{"url":"https://example.com"}'
 {
   "mcpServers": {
     "browsecraft": {
-      "command": "browsecraft",
-      "args": ["mcp", "--cdp-port", "54485"]
+      "command": "node",
+      "args": ["/path/to/packages/mcp-server/src/index.js"]
     }
   }
 }

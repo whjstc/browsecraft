@@ -1,0 +1,15 @@
+{
+  "name": "@browsecraft/http-api",
+  "version": "0.1.0",
+  "description": "BrowseCraft HTTP API Server - browser automation via REST API",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "browsecraft-server": "./src/index.js"
+  },
+  "dependencies": {
+    "@browsecraft/core": "*",
+    "express": "^4.21.2",
+    "body-parser": "^1.20.3"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@browsecraft/mcp-server",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "BrowseCraft MCP Server for Claude Desktop",
+  "bin": {
+    "browsecraft-mcp": "./src/index.js"
+  },
+  "dependencies": {
+    "@browsecraft/core": "*",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "keywords": ["mcp", "browser", "automation", "claude", "ai"],
+  "license": "MIT"
+}
