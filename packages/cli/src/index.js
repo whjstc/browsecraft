@@ -19,6 +19,7 @@ import * as get from './commands/get.js'
 import * as settings from './commands/settings.js'
 import * as cfg from './commands/config.js'
 import * as tab from './commands/tab.js'
+import * as template from './commands/template.js'
 
 // 命令映射
 const commands = {
@@ -102,6 +103,9 @@ const commands = {
 
   // tab 管理 (1)
   tab: tab.tab,
+
+  // 模板缓存 (1)
+  template: template.template,
 }
 
 // 帮助文档
@@ -189,6 +193,12 @@ Tab Management:
   browsecraft tab switch <index>
   browsecraft tab close [index]
 
+Template:
+  browsecraft template learn <name> <urlPattern> <key=selector...>
+  browsecraft template execute <templateId> <action> [text]
+  browsecraft template list
+  browsecraft template delete <templateId>
+
 Config:
   browsecraft config show
   browsecraft config set <KEY> <VALUE>
@@ -199,6 +209,7 @@ Options:
   --local   Use project-local session (./.browsecraft/)
   --global  Use global session (~/.browsecraft/) [default]
   --session Session name for multi-session isolation
+  --json    Output command result as JSON
   --type    Browser type (chrome|roxy|camoufox)
   --headless  Run in headless mode
   --roxy-api      RoxyBrowser API URL (default: http://127.0.0.1:50000)
@@ -224,6 +235,7 @@ async function main() {
       local: { type: 'boolean' },
       global: { type: 'boolean' },
       session: { type: 'string' },
+      json: { type: 'boolean' },
       type: { type: 'string' },
       headless: { type: 'boolean' },
       timeout: { type: 'string' },
@@ -256,6 +268,46 @@ async function main() {
     console.error(`Unknown command: ${cmd}`)
     console.error(`Run "browsecraft help" for usage`)
     process.exit(2)
+  }
+
+  const formatArg = (value) => {
+    if (typeof value === 'string') return value
+    try {
+      return JSON.stringify(value)
+    } catch {
+      return String(value)
+    }
+  }
+
+  if (values.json) {
+    const originalLog = console.log
+    const captured = []
+    console.log = (...items) => {
+      captured.push(items.map(formatArg).join(' '))
+    }
+
+    try {
+      const result = await commands[cmd](args, values)
+      originalLog(JSON.stringify({
+        success: true,
+        command: cmd,
+        args,
+        output: captured,
+        result: result ?? null,
+      }, null, 2))
+      process.exit(0)
+    } catch (error) {
+      console.error(JSON.stringify({
+        success: false,
+        command: cmd,
+        args,
+        output: captured,
+        error: error.message,
+      }, null, 2))
+      process.exit(2)
+    } finally {
+      console.log = originalLog
+    }
   }
 
   try {

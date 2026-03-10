@@ -4,12 +4,14 @@
 
 - Camoufox 自动启动与生命周期管理已发布到本地分支。
 - Skill 分发资产与发布预检流程已落地。
+- CLI 功能增强：`snapshot -i/-c/-d`、`--session` 多会话、`tab` 管理、`template` 管理、`--json` 输出。
+- Tab 保护机制：`BROWSECRAFT_MAX_TABS`（默认 8）防止标签页无限增长。
 - 预检脚本通过：`scripts/release-preflight.sh`
 
 ## 当前阻塞
 
-- npm 正式发布需要联网权限与用户授权。
-- 本次执行 `npm publish --workspace=@browsecraft/core --access public` 的提权请求被拒绝。
+- `frame switch` 尚未实现（ROADMAP 对应项部分完成）。
+- 浏览器真实 E2E 场景（Roxy/Camoufox/Chrome）尚未在本机全量回归。
 
 ## 待执行命令（按顺序）
 

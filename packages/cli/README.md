@@ -74,6 +74,13 @@ browsecraft stop
 - `browsecraft tab switch <index>` - 切换活动标签页
 - `browsecraft tab close [index]` - 关闭标签页
 
+### 模板缓存
+
+- `browsecraft template learn <name> <urlPattern> <key=selector...>` - 学习模板
+- `browsecraft template execute <templateId> <action> [text]` - 执行模板动作
+- `browsecraft template list` - 列出模板
+- `browsecraft template delete <templateId>` - 删除模板
+
 ### 检查（退出码：0=pass, 1=fail, 2=error）
 
 - `browsecraft exists <selector>` - 检查元素是否存在
@@ -94,6 +101,7 @@ browsecraft stop
 - `--local` - 使用项目级会话（`./.browsecraft/`）
 - `--global` - 使用全局会话（`~/.browsecraft/`）[默认]
 - `--session` - 会话名（隔离状态文件）
+- `--json` - 以 JSON 输出结果（适合程序解析）
 - `--type` - 浏览器类型（chrome|roxy|camoufox）
 - `--headless` - 无头模式
 - `--camoufox-path` - Camoufox 可执行文件路径（也可用 `CAMOUFOX_PATH`）

@@ -119,10 +119,24 @@ browsecraft tab switch 2
 browsecraft tab close 2
 ```
 
+### 1.2 模板缓存 CLI
+```bash
+browsecraft template learn "linkedin-login" "linkedin.com" email="input#username" submit="button[type=submit]"
+browsecraft template list
+browsecraft template execute template_xxx email "user@example.com"
+browsecraft template delete template_xxx
+```
+
 可通过环境变量限制标签页数量，避免内存被意外占满：
 
 ```bash
 export BROWSECRAFT_MAX_TABS=8
+```
+
+程序化集成建议加 `--json`，所有命令统一返回 JSON 包装结构：
+
+```bash
+browsecraft --json status
 ```
 
 ### 2. HTTP API
