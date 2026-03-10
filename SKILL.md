@@ -6,8 +6,6 @@ allowed-tools: Bash(browsecraft:*), Bash(node packages/http-api/src/index.js:*),
 
 # BrowseCraft Skill
 
-[中文版本 (Chinese)](./SKILL.zh-CN.md)
-
 ## Recommended Flow
 
 1. Check status: `browsecraft status`
