@@ -54,6 +54,7 @@ async function tabNew(args, options) {
   await saveState({
     ...state,
     activeTabIndex,
+    activeFrameIndex: null,
     updatedAt: new Date().toISOString(),
   }, options.local)
 
@@ -76,6 +77,7 @@ async function tabSwitch(args, options) {
   await saveState({
     ...state,
     activeTabIndex: index - 1,
+    activeFrameIndex: null,
     updatedAt: new Date().toISOString(),
   }, options.local)
 
@@ -112,6 +114,7 @@ async function tabClose(args, options) {
   await saveState({
     ...state,
     activeTabIndex: nextActiveTabIndex,
+    activeFrameIndex: null,
     updatedAt: new Date().toISOString(),
   }, options.local)
 

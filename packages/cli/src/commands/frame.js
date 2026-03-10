@@ -4,29 +4,7 @@
 
 import { withPage } from './base.js'
 import { loadState, saveState } from '../state.js'
-
-function flattenFrames(rootFrame) {
-  const result = []
-  const queue = [{ frame: rootFrame, depth: 0, parent: null }]
-
-  while (queue.length > 0) {
-    const current = queue.shift()
-    const name = current.frame.name() || '(no-name)'
-    result.push({
-      frame: current.frame,
-      depth: current.depth,
-      parent: current.parent,
-      name,
-      url: current.frame.url() || 'about:blank',
-    })
-
-    for (const child of current.frame.childFrames()) {
-      queue.push({ frame: child, depth: current.depth + 1, parent: name })
-    }
-  }
-
-  return result
-}
+import { flattenFrames, getFrameByIndex } from './frame-utils.js'
 
 export async function frame(args, options) {
   const sub = args[0]
@@ -72,8 +50,8 @@ async function switchFrame(args, options) {
   }
 
   const { page } = await withPage(options.local)
-  const frames = flattenFrames(page.mainFrame())
-  if (!frames[index]) {
+  const { item } = getFrameByIndex(page, index)
+  if (!item) {
     throw new Error(`Frame ${index} not found`)
   }
 
@@ -84,8 +62,8 @@ async function switchFrame(args, options) {
     updatedAt: new Date().toISOString(),
   }, options.local)
 
-  console.log(`Switched active frame to [${index}] ${frames[index].url}`)
-  return { activeFrameIndex: index, url: frames[index].url, name: frames[index].name }
+  console.log(`Switched active frame to [${index}] ${item.url}`)
+  return { activeFrameIndex: index, url: item.url, name: item.name }
 }
 
 async function clearFrame(args, options) {

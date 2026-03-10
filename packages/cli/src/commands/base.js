@@ -4,6 +4,7 @@
 
 import { BrowserConnector, BrowserActions, SnapshotManager } from '@browsecraft/core'
 import { loadState } from '../state.js'
+import { getFrameByIndex } from './frame-utils.js'
 
 /**
  * 获取浏览器连接和页面
@@ -32,10 +33,8 @@ export async function withPage(local = false) {
 
   let activeFrame = null
   if (activePage && Number.isInteger(state.activeFrameIndex)) {
-    const frames = activePage.frames()
-    if (frames[state.activeFrameIndex]) {
-      activeFrame = frames[state.activeFrameIndex]
-    }
+    const { item } = getFrameByIndex(activePage, state.activeFrameIndex)
+    activeFrame = item?.frame || null
   }
 
   const actions = new BrowserActions(connector, activeFrame)

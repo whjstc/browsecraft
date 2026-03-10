@@ -9,6 +9,9 @@
   "dependencies": {
     "@browsecraft/core": "*"
   },
+  "scripts": {
+    "test": "node --test test/**/*.test.js"
+  },
   "keywords": ["browser", "automation", "ai", "agent", "cli", "playwright"],
   "license": "MIT"
 }

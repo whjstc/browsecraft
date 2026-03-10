@@ -3,6 +3,18 @@
  */
 
 import { withPage } from './base.js'
+import { loadState, saveState } from '../state.js'
+
+async function clearFrameSelection(local = false) {
+  const state = await loadState(local)
+  if (!state) return
+  if (state.activeFrameIndex === null || state.activeFrameIndex === undefined) return
+  await saveState({
+    ...state,
+    activeFrameIndex: null,
+    updatedAt: new Date().toISOString(),
+  }, local)
+}
 
 /**
  * 打开 URL
@@ -18,6 +30,7 @@ export async function open(args, options) {
 
   const { actions } = await withPage(options.local)
   const result = await actions.navigate(fullUrl)
+  await clearFrameSelection(options.local)
   console.log(`${result.title}`)
   console.log(`${result.url}`)
 }
@@ -28,6 +41,7 @@ export async function open(args, options) {
 export async function back(args, options) {
   const { page } = await withPage(options.local)
   await page.goBack({ waitUntil: 'domcontentloaded', timeout: 10000 })
+  await clearFrameSelection(options.local)
   console.log(`${await page.title()}`)
   console.log(`${page.url()}`)
 }
@@ -38,6 +52,7 @@ export async function back(args, options) {
 export async function forward(args, options) {
   const { page } = await withPage(options.local)
   await page.goForward({ waitUntil: 'domcontentloaded', timeout: 10000 })
+  await clearFrameSelection(options.local)
   console.log(`${await page.title()}`)
   console.log(`${page.url()}`)
 }
@@ -48,6 +63,7 @@ export async function forward(args, options) {
 export async function reload(args, options) {
   const { page } = await withPage(options.local)
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 10000 })
+  await clearFrameSelection(options.local)
   console.log(`${await page.title()}`)
   console.log(`${page.url()}`)
 }
