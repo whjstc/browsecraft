@@ -1,17 +1,17 @@
-# BrowseCraft
+# BrowseCraft（中文文档）
 
-Universal browser automation for AI agents, optimized for repeatable workflows.
+面向 AI Agent 的通用浏览器自动化工具，重点优化可重复工作流。
 
-[中文文档 (Chinese)](./README.zh-CN.md)
+[English README](./README.md)
 
-## Highlights
+## 核心特性
 
-- Multi-browser support: `RoxyBrowser`, `Camoufox`, `Chrome`, `Firefox`, `Edge`
-- Multiple interfaces: `CLI` / `HTTP API` / `MCP Server` / `Skill assets`
-- Memory-oriented automation: template cache + ref-based snapshot flow
-- Low-token operational model for agent usage
+- 多浏览器支持：`RoxyBrowser`、`Camoufox`、`Chrome`、`Firefox`、`Edge`
+- 多接口形态：`CLI` / `HTTP API` / `MCP Server` / `Skill`
+- 面向记忆的自动化：模板缓存 + 基于 `ref` 的快照交互
+- 低 token 成本，适合 Agent 高频调用
 
-## Quick Start (CLI)
+## 快速开始（CLI）
 
 ```bash
 npm install -g browsecraft-cli
@@ -24,7 +24,7 @@ browsecraft screenshot result.png
 browsecraft stop
 ```
 
-## Browser Backends
+## 浏览器后端
 
 ### RoxyBrowser
 
@@ -40,13 +40,13 @@ browsecraft start --type camoufox
 browsecraft connect ws://127.0.0.1:9222/... --type camoufox
 ```
 
-### Chrome (existing debug endpoint)
+### Chrome（已开启调试端口）
 
 ```bash
 browsecraft connect http://127.0.0.1:9222 --type chrome
 ```
 
-## Session, Tabs, Frames
+## 会话、标签页、Frame
 
 ```bash
 browsecraft --session sales start
@@ -58,13 +58,13 @@ browsecraft frame switch 1
 browsecraft frame clear
 ```
 
-Use `BROWSECRAFT_MAX_TABS` to cap tab growth:
+使用 `BROWSECRAFT_MAX_TABS` 限制标签页上限：
 
 ```bash
 export BROWSECRAFT_MAX_TABS=8
 ```
 
-## Template Cache CLI
+## 模板缓存命令
 
 ```bash
 browsecraft template learn "linkedin-login" "linkedin.com" email="input#username" submit="button[type=submit]"
@@ -73,7 +73,7 @@ browsecraft template execute template_xxx email "user@example.com"
 browsecraft template delete template_xxx
 ```
 
-## Workflow Engine (YAML)
+## 工作流引擎（YAML）
 
 ```yaml
 name: LinkedIn Search
@@ -99,9 +99,9 @@ browsecraft workflow dry-run workflows/linkedin.yml keyword="founder shanghai sa
 browsecraft workflow run workflows/linkedin.yml keyword="founder shanghai saas"
 ```
 
-## JSON Output
+## JSON 输出
 
-All CLI commands support `--json` for programmatic integration:
+所有 CLI 命令都支持 `--json` 便于程序集成：
 
 ```bash
 browsecraft --json status
@@ -116,7 +116,7 @@ curl -X POST http://localhost:3000/goto -d '{"url":"https://example.com"}'
 
 ## MCP Server
 
-Configure in your MCP client:
+在 MCP 客户端中配置：
 
 ```json
 {
@@ -129,7 +129,7 @@ Configure in your MCP client:
 }
 ```
 
-## Project Layout
+## 项目结构
 
 ```text
 browsecraft/
@@ -143,11 +143,11 @@ browsecraft/
 └── scripts/
 ```
 
-## Release References
+## 发布参考
 
-- npm publish helper: `scripts/publish-npm.sh` (supports `NPM_OTP=123456`)
-- Skill assets: `SKILL.md`, `packages/skill/`
+- npm 发布脚本：`scripts/publish-npm.sh`（支持 `NPM_OTP=123456`）
+- Skill 资产：`SKILL.md`、`packages/skill/`
 
-## License
+## 许可证
 
 MIT

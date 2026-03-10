@@ -1,26 +1,26 @@
-# BrowseCraft CLI
+# BrowseCraft CLI（中文文档）
 
-Browser automation CLI for repeatable AI-agent workflows.
+面向可重复 AI Agent 工作流的浏览器自动化 CLI。
 
-[中文文档 (Chinese)](./README.zh-CN.md)
+[English README](./README.md)
 
-## Features
+## 功能
 
-- Persistent browser architecture with stateless commands
-- Ref-based snapshot flow (`snapshot` → `click-ref` / `fill-ref`)
-- RoxyBrowser and Camoufox integration
-- Multi-session isolation (`--session`)
-- Tab and frame management
-- Template cache commands
-- Global JSON output (`--json`)
+- 持久浏览器架构 + 无状态命令
+- 基于 ref 的快照流（`snapshot` → `click-ref` / `fill-ref`）
+- 集成 RoxyBrowser 与 Camoufox
+- 多会话隔离（`--session`）
+- 标签页与 frame 管理
+- 模板缓存命令
+- 全局 JSON 输出（`--json`）
 
-## Install
+## 安装
 
 ```bash
 npm install -g browsecraft-cli
 ```
 
-## Core Workflow
+## 核心流程
 
 ```bash
 browsecraft start
@@ -31,20 +31,20 @@ browsecraft screenshot result.png
 browsecraft stop
 ```
 
-## Lifecycle
+## 生命周期命令
 
 - `browsecraft start [--type chrome|roxy|camoufox]`
 - `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
 - `browsecraft status`
 - `browsecraft stop`
 
-## Snapshot
+## 快照命令
 
 - `browsecraft snapshot [-i] [-c] [-d depth]`
 - `browsecraft click-ref <ref>`
 - `browsecraft fill-ref <ref> <text>`
 
-## Tabs and Frames
+## 标签页与 Frame
 
 - `browsecraft tab list`
 - `browsecraft tab new [url]`
@@ -54,32 +54,32 @@ browsecraft stop
 - `browsecraft frame switch <index>`
 - `browsecraft frame clear`
 
-## Templates
+## 模板命令
 
 - `browsecraft template learn <name> <urlPattern> <key=selector...>`
 - `browsecraft template execute <templateId> <action> [text]`
 - `browsecraft template list`
 - `browsecraft template delete <templateId>`
 
-## Workflow
+## 工作流命令
 
 - `browsecraft workflow run <file.yml> [key=value ...]`
 - `browsecraft workflow validate <file.yml> [key=value ...]`
 - `browsecraft workflow dry-run <file.yml> [key=value ...]`
 
-## Options
+## 常用选项
 
-- `--local`: use `./.browsecraft/`
-- `--global`: use `~/.browsecraft/` (default)
-- `--session`: isolate state per session
-- `--json`: JSON output wrapper for all commands
-- `--type`: `chrome|roxy|camoufox`
+- `--local`：使用 `./.browsecraft/`
+- `--global`：使用 `~/.browsecraft/`（默认）
+- `--session`：按会话隔离状态
+- `--json`：所有命令统一 JSON 包装输出
+- `--type`：`chrome|roxy|camoufox`
 - `--headless`
 - `--camoufox-path`
-- `BROWSECRAFT_MAX_TABS` (env): max tabs per context (default `8`)
+- `BROWSECRAFT_MAX_TABS`（环境变量）：每个上下文最大标签页（默认 `8`）
 
-## Exit Codes
+## 退出码
 
-- `0`: success
-- `1`: check failed (`exists` / `visible` / `assert`)
-- `2`: error
+- `0`：成功
+- `1`：检查失败（`exists` / `visible` / `assert`）
+- `2`：错误
