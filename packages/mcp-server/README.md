@@ -1,7 +1,5 @@
 # BrowseCraft MCP Server
 
-[中文文档 (Chinese)](./README.zh-CN.md)
-
 MCP server for browser automation with accessibility snapshots and ref-based interaction.
 
 ## Configuration

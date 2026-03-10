@@ -2,8 +2,6 @@
 
 Browser automation CLI for repeatable AI-agent workflows.
 
-[中文文档 (Chinese)](./README.zh-CN.md)
-
 ## Features
 
 - Persistent browser architecture with stateless commands

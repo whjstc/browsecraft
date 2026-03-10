@@ -2,8 +2,6 @@
 
 Universal browser automation for AI agents, optimized for repeatable workflows.
 
-[中文文档 (Chinese)](./README.zh-CN.md)
-
 ## Highlights
 
 - Multi-browser support: `RoxyBrowser`, `Camoufox`, `Chrome`, `Firefox`, `Edge`
