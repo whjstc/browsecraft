@@ -44,7 +44,7 @@ browsecraft stop
 
 - `browsecraft start` - 启动浏览器
 - `browsecraft stop` - 停止浏览器
-- `browsecraft connect <cdp-endpoint>` - 连接已有浏览器
+- `browsecraft connect <endpoint>` - 连接已有浏览器（Chrome 用 http/ws；Camoufox 用 ws）
 - `browsecraft status` - 查看浏览器状态
 
 ### 导航
@@ -88,6 +88,7 @@ browsecraft stop
 - `--global` - 使用全局会话（`~/.browsecraft/`）[默认]
 - `--type` - 浏览器类型（chrome|roxy|camoufox）
 - `--headless` - 无头模式
+- `--camoufox-path` - Camoufox 可执行文件路径（也可用 `CAMOUFOX_PATH`）
 
 ## 退出码
 

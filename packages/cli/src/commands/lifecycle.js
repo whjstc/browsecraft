@@ -2,7 +2,7 @@
  * 生命周期命令 - start/stop/connect/status
  */
 
-import { chromium } from 'playwright-core'
+import { chromium, firefox } from 'playwright-core'
 import { saveState, loadState, deleteState } from '../state.js'
 
 /**
@@ -16,6 +16,10 @@ export async function start(args, options) {
   // RoxyBrowser 模式：通过 API 启动窗口
   if (browserType === 'roxy' || options['roxy-api']) {
     return startRoxy(options, local)
+  }
+
+  if (browserType === 'camoufox' || browserType === 'firefox') {
+    return startCamoufox(options, local)
   }
 
   // 检查是否已有运行中的浏览器
@@ -118,6 +122,83 @@ export async function start(args, options) {
   console.log(`CDP: ${wsEndpoint}`)
 }
 
+async function startCamoufox(options, local) {
+  const existingState = await loadState(local)
+  if (existingState) {
+    try {
+      const browser = await connectByState(existingState, 3000)
+      await browser.close().catch(() => {})
+      console.log(`Browser already running at ${existingState.cdpEndpoint}`)
+      return
+    } catch {
+      await deleteState(local)
+    }
+  }
+
+  const { spawn, execSync } = await import('node:child_process')
+  const path = await import('node:path')
+  const fs = await import('node:fs/promises')
+  const camoufoxPath = await resolveCamoufoxPath(options, execSync, fs)
+
+  const helperPath = path.resolve(process.cwd(), 'packages/cli/src/camoufox-server.js')
+  const helperConfig = JSON.stringify({
+    headless: options.headless || false,
+    executablePath: camoufoxPath || undefined,
+  })
+
+  const child = spawn(process.execPath, [helperPath, helperConfig], {
+    detached: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+
+  let wsEndpoint = null
+
+  await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error('Camoufox failed to start within 15 seconds'))
+    }, 15000)
+
+    child.stdout.on('data', (buffer) => {
+      const text = buffer.toString()
+      const match = text.match(/WS_ENDPOINT=(.+)/)
+      if (match) {
+        wsEndpoint = match[1].trim()
+        clearTimeout(timer)
+        resolve()
+      }
+    })
+
+    child.stderr.on('data', (buffer) => {
+      const text = buffer.toString().trim()
+      if (text) {
+        clearTimeout(timer)
+        reject(new Error(`Camoufox start failed: ${text}`))
+      }
+    })
+
+    child.on('exit', (code) => {
+      if (!wsEndpoint) {
+        clearTimeout(timer)
+        reject(new Error(`Camoufox process exited early (code: ${code ?? 'unknown'})`))
+      }
+    })
+  })
+
+  child.unref()
+
+  await saveState({
+    cdpEndpoint: wsEndpoint,
+    browserType: 'camoufox',
+    pid: child.pid,
+    camoufoxPath: camoufoxPath || undefined,
+    scope: local ? 'local' : 'global',
+    startedAt: new Date().toISOString(),
+  }, local)
+
+  console.log(`Camoufox started (pid: ${child.pid})`)
+  console.log(`WS: ${wsEndpoint}`)
+}
+
 /**
  * 停止浏览器
  */
@@ -132,7 +213,7 @@ export async function stop(args, options) {
 
   // 尝试优雅关闭
   try {
-    const browser = await chromium.connectOverCDP(state.cdpEndpoint, { timeout: 5000 })
+    const browser = await connectByState(state, 5000)
     await browser.close()
   } catch {
     // 如果 CDP 连接失败，直接杀进程
@@ -152,34 +233,36 @@ export async function stop(args, options) {
  */
 export async function connect(args, options) {
   const local = options.local || false
-  const cdpEndpoint = args[0]
+  const endpoint = args[0]
+  const browserType = options.type || 'chrome'
 
-  if (!cdpEndpoint) {
-    throw new Error('Usage: browsecraft connect <cdp-endpoint>')
+  if (!endpoint) {
+    throw new Error('Usage: browsecraft connect <endpoint>')
   }
 
   // 验证连接
-  let wsEndpoint = cdpEndpoint
+  let wsEndpoint = endpoint
 
-  // 如果是 HTTP URL，获取 WebSocket 端点
-  if (cdpEndpoint.startsWith('http')) {
+  // Chromium 类浏览器支持通过 HTTP /json/version 自动发现 ws
+  if (browserType !== 'camoufox' && browserType !== 'firefox' && endpoint.startsWith('http')) {
     try {
-      const resp = await fetch(`${cdpEndpoint}/json/version`)
+      const resp = await fetch(`${endpoint}/json/version`)
       const data = await resp.json()
       wsEndpoint = data.webSocketDebuggerUrl
     } catch {
-      throw new Error(`Cannot connect to ${cdpEndpoint}`)
+      throw new Error(`Cannot connect to ${endpoint}`)
     }
   }
 
-  // 验证 WebSocket 连接
-  const browser = await chromium.connectOverCDP(wsEndpoint, { timeout: 10000 })
+  // 验证连接
+  const browser = await connectByType(browserType, wsEndpoint, 10000)
   const contexts = browser.contexts()
   const pages = contexts.length > 0 ? contexts[0].pages().length : 0
+  await browser.close().catch(() => {})
 
   await saveState({
     cdpEndpoint: wsEndpoint,
-    browserType: options.type || 'chrome',
+    browserType,
     scope: local ? 'local' : 'global',
     connectedAt: new Date().toISOString(),
   }, local)
@@ -365,10 +448,11 @@ export async function status(args, options) {
   let pages = 0
 
   try {
-    const browser = await chromium.connectOverCDP(state.cdpEndpoint, { timeout: 3000 })
+    const browser = await connectByState(state, 3000)
     alive = true
     const contexts = browser.contexts()
     pages = contexts.length > 0 ? contexts[0].pages().length : 0
+    await browser.close().catch(() => {})
   } catch {
     alive = false
   }
@@ -378,4 +462,40 @@ export async function status(args, options) {
   if (state.pid) console.log(`PID: ${state.pid}`)
   if (alive) console.log(`Pages: ${pages}`)
   if (state.startedAt) console.log(`Started: ${state.startedAt}`)
+}
+
+function connectByType(type, endpoint, timeout = 5000) {
+  if (type === 'camoufox' || type === 'firefox') {
+    return firefox.connect(endpoint, { timeout })
+  }
+  return chromium.connectOverCDP(endpoint, { timeout })
+}
+
+function connectByState(state, timeout = 5000) {
+  return connectByType(state.browserType || 'chrome', state.cdpEndpoint, timeout)
+}
+
+async function resolveCamoufoxPath(options, execSync, fs) {
+  const preferred = options['camoufox-path'] || process.env.CAMOUFOX_PATH
+  if (preferred) return preferred
+
+  if (process.platform === 'darwin') {
+    const macCandidates = [
+      '/Applications/Camoufox.app/Contents/MacOS/Camoufox',
+      '/Applications/Camoufox.app/Contents/MacOS/camoufox',
+    ]
+    for (const candidate of macCandidates) {
+      try {
+        await fs.access(candidate)
+        return candidate
+      } catch {}
+    }
+  }
+
+  try {
+    const found = execSync('which camoufox || which camoufox-bin', { encoding: 'utf-8' }).trim()
+    if (found) return found
+  } catch {}
+
+  return null
 }

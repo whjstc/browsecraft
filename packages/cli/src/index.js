@@ -107,8 +107,9 @@ BrowseCraft - Browser automation for AI agents (with memory)
 Lifecycle:
   browsecraft start [--type chrome|roxy|camoufox] [--headless]
   browsecraft start --type roxy [--roxy-api URL] [--roxy-token KEY] [--roxy-window-id ID]
+  browsecraft start --type camoufox [--camoufox-path /path/to/camoufox]
+  browsecraft connect <endpoint> [--type chrome|camoufox|roxy]
   browsecraft stop
-  browsecraft connect <cdp-endpoint>
   browsecraft status
   browsecraft roxy-list [--roxy-api URL] [--roxy-token KEY]
 
@@ -193,6 +194,7 @@ Options:
   --roxy-token    RoxyBrowser API token
   --roxy-window-id    RoxyBrowser window/dir ID to open
   --roxy-workspace-id RoxyBrowser workspace ID
+  --camoufox-path     Camoufox executable path (or use CAMOUFOX_PATH env)
 
 Exit codes:
   0  Success
@@ -217,6 +219,7 @@ async function main() {
       'roxy-token': { type: 'string' },
       'roxy-window-id': { type: 'string' },
       'roxy-workspace-id': { type: 'string' },
+      'camoufox-path': { type: 'string' },
     },
     allowPositionals: true,
     strict: false,

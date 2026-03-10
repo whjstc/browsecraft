@@ -7,7 +7,7 @@
 - **多浏览器支持**: RoxyBrowser, Camoufox, Chrome, Firefox, Edge
 - **多接入方式**: CLI / HTTP API / MCP Server / Skill
 - **AI 优化**: 模板缓存系统,减少 90% token 消耗
-- **工作流引擎**: YAML 定义自动化流程,支持 AI 步骤
+- **工作流引擎（规划中）**: YAML 定义自动化流程,支持 AI 步骤
 - **通用性**: 任何 AI Agent 都能使用 (OpenClaw, Claude, GPT, etc.)
 
 ## 快速开始
@@ -69,21 +69,25 @@ curl -X POST http://localhost:3000/goto -d '{"url":"https://example.com"}'
 
 ### RoxyBrowser
 ```bash
-# 自动发现 CDP 端点
-browsecraft connect --type roxy --port 54485
+# 通过 RoxyBrowser API 启动并连接（推荐）
+browsecraft start --type roxy --roxy-api http://127.0.0.1:50000 --roxy-token YOUR_TOKEN --roxy-window-id YOUR_ID
 
-# 通过 RoxyBrowser API 启动并连接
-browsecraft connect --type roxy --api-token YOUR_TOKEN --window-id YOUR_ID
+# 已有 ws 端点时直接连接
+browsecraft connect ws://127.0.0.1:54485/devtools/browser/xxx --type roxy
 ```
 
 ### Camoufox (Firefox)
 ```bash
-browsecraft connect --type camoufox --port 9222
+# 自动启动并连接（支持从 PATH / CAMOUFOX_PATH / --camoufox-path 发现可执行文件）
+browsecraft start --type camoufox
+
+# 已有 ws 端点时也可直接连接
+browsecraft connect ws://127.0.0.1:9222/... --type camoufox
 ```
 
 ### 普通 Chrome
 ```bash
-browsecraft connect --type chrome --port 9222
+browsecraft connect http://127.0.0.1:9222 --type chrome
 ```
 
 ## 产品形态
@@ -122,12 +126,12 @@ curl -X POST http://localhost:3000/goto -d '{"url":"https://example.com"}'
 }
 ```
 
-### 4. Skill (OpenClaw / Claude Code)
+### 4. Skill (OpenClaw / Claude Code，发布中)
 ```bash
-# OpenClaw
+# OpenClaw（待上架）
 openclaw skills install browsecraft
 
-# Claude Code
+# Claude Code（待上架）
 npx skills add browsecraft/browsecraft@automation
 ```
 
