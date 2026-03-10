@@ -1,10 +1,18 @@
 ---
 name: browsecraft
 description: Memory-oriented browser automation skill for repeatable web workflows (login, extraction, bulk actions, form filling, screenshots, checks) across RoxyBrowser, Camoufox, and Chrome.
-allowed-tools: Bash(browsecraft:*), Bash(node packages/http-api/src/index.js:*), Bash(node packages/mcp-server/src/index.js:*)
+allowed-tools: Bash(browsecraft:*)
 ---
 
 # BrowseCraft Skill
+
+## Installation Prerequisites
+
+1. Install CLI: `npm install -g browsecraft-cli`
+2. Verify install: `browsecraft --help`
+3. Optional (RoxyBrowser only): set `ROXY_API` and `ROXY_TOKEN` in environment variables.
+
+If the CLI is missing, stop and ask the user to install it first. Do not assume local package scripts are available.
 
 ## Recommended Flow
 
@@ -18,9 +26,16 @@ allowed-tools: Bash(browsecraft:*), Bash(node packages/http-api/src/index.js:*),
 
 ## Backend Strategy
 
-- RoxyBrowser: `browsecraft start --type roxy --roxy-api ... --roxy-token ... --roxy-window-id ...`
+- RoxyBrowser (preferred credential flow): `ROXY_API=... ROXY_TOKEN=... browsecraft start --type roxy --roxy-window-id ...`
 - Camoufox: `browsecraft start --type camoufox` (optional `--camoufox-path`)
 - Existing endpoint: `browsecraft connect <endpoint> --type <chrome|camoufox|roxy>`
+
+## Credential & Scope Policy
+
+- `ROXY_TOKEN` is optional and only needed when the user explicitly chooses RoxyBrowser.
+- Prefer environment variables over CLI token flags. Avoid printing or echoing secrets.
+- Never send credentials or page data to third-party endpoints unless the user explicitly requests it.
+- If a step needs network access outside the target website, ask for confirmation first.
 
 ## Stability Rules
 
