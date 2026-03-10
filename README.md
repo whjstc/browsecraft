@@ -145,8 +145,7 @@ browsecraft/
 
 ## Release References
 
-- Runbook: `docs/RELEASE-RUNBOOK.md`
-- Live status: `docs/RELEASE-STATUS.md`
+- npm publish helper: `scripts/publish-npm.sh` (supports `NPM_OTP=123456`)
 - Skill assets: `SKILL.md`, `packages/skill/`
 
 ## License
