@@ -61,6 +61,10 @@ browsecraft stop
 - `browsecraft template list`
 - `browsecraft template delete <templateId>`
 
+## Workflow
+
+- `browsecraft workflow run <file.yml> [key=value ...]`
+
 ## Options
 
 - `--local`: use `./.browsecraft/`

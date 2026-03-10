@@ -21,6 +21,7 @@ import * as cfg from './commands/config.js'
 import * as tab from './commands/tab.js'
 import * as template from './commands/template.js'
 import * as frame from './commands/frame.js'
+import * as workflow from './commands/workflow.js'
 
 // 命令映射
 const commands = {
@@ -110,6 +111,9 @@ const commands = {
 
   // 模板缓存 (1)
   template: template.template,
+
+  // 工作流 (1)
+  workflow: workflow.workflow,
 }
 
 // 帮助文档
@@ -207,6 +211,9 @@ Template:
   browsecraft template execute <templateId> <action> [text]
   browsecraft template list
   browsecraft template delete <templateId>
+
+Workflow:
+  browsecraft workflow run <file.yml> [key=value ...]
 
 Config:
   browsecraft config show

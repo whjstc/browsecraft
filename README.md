@@ -73,6 +73,30 @@ browsecraft template execute template_xxx email "user@example.com"
 browsecraft template delete template_xxx
 ```
 
+## Workflow Engine (YAML)
+
+```yaml
+name: LinkedIn Search
+vars:
+  keyword: founder shanghai saas
+steps:
+  - action: open
+    url: https://www.linkedin.com
+  - action: fill
+    selector: input[role=combobox]
+    value: "{{keyword}}"
+  - action: press
+    key: Enter
+  - action: wait-for
+    selector: main
+  - action: screenshot
+    path: linkedin-search.png
+```
+
+```bash
+browsecraft workflow run workflows/linkedin.yml keyword="founder shanghai saas"
+```
+
 ## JSON Output
 
 All CLI commands support `--json` for programmatic integration:

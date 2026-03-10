@@ -7,7 +7,8 @@
     "browsecraft": "./src/index.js"
   },
   "dependencies": {
-    "@browsecraft/core": "*"
+    "@browsecraft/core": "*",
+    "js-yaml": "^4.1.0"
   },
   "scripts": {
     "test": "node --test test/**/*.test.js"
