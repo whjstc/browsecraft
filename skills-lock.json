@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "browsecraft": {
+      "source": "whjstc/browsecraft",
+      "sourceType": "github",
+      "computedHash": "6fce805b44c287ba7c1cbb5533d5f7cb160c6bc690ec34604ccc11dfb283c299"
+    }
+  }
+}

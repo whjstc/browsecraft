@@ -1,14 +1,6 @@
 ---
 name: browsecraft
-version: 0.1.1
 description: Memory-oriented browser automation skill for repeatable web workflows (login, extraction, bulk actions, form filling, screenshots, checks) across RoxyBrowser, Camoufox, and Chrome.
-author: RoyWu
-tags:
-  - browser-automation
-  - playwright
-  - roxybrowser
-  - camoufox
-  - workflow
 allowed-tools: Bash(browsecraft:*)
 metadata: {"openclaw":{"emoji":"🧭","requires":{"bins":["browsecraft"]},"install":[{"id":"npm","kind":"node","package":"browsecraft-cli","bins":["browsecraft"],"label":"Install BrowseCraft CLI (npm)"}]}}
 ---

@@ -1,0 +1,13 @@
+{
+  "name": "browsecraft-core",
+  "version": "0.1.1",
+  "description": "BrowseCraft core library - browser automation for AI agents",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "dependencies": {
+    "playwright-core": "^1.49.0"
+  }
+}
