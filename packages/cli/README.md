@@ -37,8 +37,17 @@ browsecraft stop
 - `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
 - `browsecraft status`
 - `browsecraft stop`
+- `browsecraft disconnect`
 - `browsecraft roxy-list`
 - `browsecraft roxy-doctor`
+
+### Stop vs Disconnect
+
+- `browsecraft stop` ends the current BrowseCraft-managed session.
+- For local Chrome and Camoufox started by BrowseCraft, `stop` shuts down the browser process.
+- For RoxyBrowser windows started by BrowseCraft, `stop` calls the Roxy API to close that window.
+- For browsers attached via `browsecraft connect`, `stop` falls back to a session disconnect and leaves the external browser running.
+- `browsecraft disconnect` always clears the current session without attempting to close the underlying browser/window.
 
 ## Snapshot
 

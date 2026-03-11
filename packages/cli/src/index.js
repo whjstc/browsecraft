@@ -28,6 +28,7 @@ const commands = {
   // 生命周期 (5)
   start: lifecycle.start,
   stop: lifecycle.stop,
+  disconnect: lifecycle.disconnect,
   connect: lifecycle.connect,
   status: lifecycle.status,
   'roxy-list': lifecycle.roxyList,
@@ -127,6 +128,7 @@ Lifecycle:
   browsecraft start --type camoufox [--camoufox-path /path/to/camoufox]
   browsecraft connect <endpoint> [--type chrome|camoufox|roxy]
   browsecraft stop
+  browsecraft disconnect
   browsecraft status
   browsecraft roxy-list [--roxy-api URL] [--roxy-token KEY]
   browsecraft roxy-doctor [--roxy-api URL] [--roxy-token KEY] [--roxy-workspace-id ID] [--roxy-window-id ID]

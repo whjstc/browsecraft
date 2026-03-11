@@ -465,7 +465,7 @@ browsecraft/
 - 发布预检：`scripts/release-preflight.sh`
 - 一键发布准备：`npm run release:loop`
 - 导出平台资产：`npm run release:skill`
-- Skill 资产：`SKILL.md`、`packages/skill/`
+- Skill 资产：`SKILL.md`、`packages/skill/`（发布维护文档见 `docs/skill-release/`）
 
 ## 许可证
 

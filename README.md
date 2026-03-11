@@ -204,6 +204,11 @@ browsecraft open https://example.com
 browsecraft snapshot
 ```
 
+Lifecycle note:
+
+- If the RoxyBrowser window was started by `browsecraft start --type roxy`, then `browsecraft stop` closes that Roxy window.
+- If you attached to an already-running browser with `browsecraft connect`, use `browsecraft disconnect` when you only want to detach the session.
+
 `browsecraft roxy-list` intentionally does not print a websocket endpoint for every window. That would require opening windows as a side effect. Instead, it prints the durable identifiers and a copy-pasteable `browsecraft start --type roxy ...` command for each window.
 
 `browsecraft roxy-doctor` is the safer discovery command. It checks:

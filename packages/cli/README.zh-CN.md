@@ -37,8 +37,17 @@ browsecraft stop
 - `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
 - `browsecraft status`
 - `browsecraft stop`
+- `browsecraft disconnect`
 - `browsecraft roxy-list`
 - `browsecraft roxy-doctor`
+
+### `stop` 与 `disconnect` 的区别
+
+- `browsecraft stop` 用于结束当前由 BrowseCraft 管理的会话。
+- 对 BrowseCraft 自己启动的本地 Chrome 和 Camoufox，`stop` 会真正关闭浏览器进程。
+- 对 BrowseCraft 自己启动的 RoxyBrowser 窗口，`stop` 会调用 Roxy API 真正关闭该窗口。
+- 对通过 `browsecraft connect` 连接的外部浏览器，`stop` 会退化为断开当前会话，不会关闭外部浏览器。
+- `browsecraft disconnect` 始终只清理当前会话，不尝试关闭底层浏览器或窗口。
 
 ## 快照命令
 

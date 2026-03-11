@@ -132,6 +132,7 @@ export async function start(args, options) {
   await saveState({
     cdpEndpoint: wsEndpoint,
     browserType,
+    owner: 'browsecraft',
     activeTabIndex: 0,
     activeFrameIndex: null,
     pid: child.pid,
@@ -211,6 +212,7 @@ async function startCamoufox(options, local) {
   await saveState({
     cdpEndpoint: wsEndpoint,
     browserType: 'camoufox',
+    owner: 'browsecraft',
     activeTabIndex: 0,
     activeFrameIndex: null,
     pid: child.pid,
@@ -235,21 +237,43 @@ export async function stop(args, options) {
     return
   }
 
-  // 尝试优雅关闭
   try {
-    const browser = await connectByState(state, 5000)
-    await browser.close()
-  } catch {
-    // 如果 CDP 连接失败，直接杀进程
-    if (state.pid) {
-      try {
-        process.kill(state.pid)
-      } catch {}
+    if (state.owner === 'external') {
+      await disconnect(args, options)
+      return
     }
+
+    if (state.browserType === 'roxy' && state.roxyWindowId) {
+      await closeRoxyWindow(state, options)
+      await deleteState(local)
+      console.log(`RoxyBrowser window closed (${state.roxyWindowId})`)
+      return
+    }
+
+    await closeManagedBrowser(state)
+    await deleteState(local)
+    console.log('Browser stopped')
+  } catch (error) {
+    throw new Error(`Failed to stop browser: ${error.message}`)
+  }
+}
+
+export async function disconnect(args, options) {
+  const local = options.local || false
+  const state = await loadState(local)
+
+  if (!state) {
+    console.log('No browser session')
+    return
   }
 
+  try {
+    const browser = await connectByState(state, 5000)
+    await browser.close().catch(() => {})
+  } catch {}
+
   await deleteState(local)
-  console.log('Browser stopped')
+  console.log('Session disconnected')
 }
 
 /**
@@ -287,6 +311,7 @@ export async function connect(args, options) {
   await saveState({
     cdpEndpoint: wsEndpoint,
     browserType,
+    owner: 'external',
     activeTabIndex: 0,
     activeFrameIndex: null,
     scope: local ? 'local' : 'global',
@@ -304,6 +329,52 @@ function roxyConfig(options) {
   return {
     apiBase: options['roxy-api'] || process.env.ROXY_API || 'http://127.0.0.1:50000',
     apiToken: options['roxy-token'] || process.env.ROXY_TOKEN || '',
+  }
+}
+
+export async function closeManagedBrowser(state) {
+  try {
+    const browser = await connectByState(state, 5000)
+    await browser.close()
+    return
+  } catch {}
+
+  if (state.pid) {
+    try {
+      process.kill(state.pid)
+      return
+    } catch {}
+  }
+
+  throw new Error('unable to reach managed browser process')
+}
+
+export function resolveRoxyStopConfig(state, options) {
+  const { apiBase, apiToken } = roxyConfig(options)
+  return {
+    apiBase: state.roxyApi || apiBase,
+    apiToken,
+    workspaceId: state.roxyWorkspaceId || 0,
+    dirId: state.roxyWindowId || '',
+  }
+}
+
+export async function closeRoxyWindow(state, options) {
+  const { apiBase, apiToken, workspaceId, dirId } = resolveRoxyStopConfig(state, options)
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(apiToken ? { Authorization: apiToken } : {}),
+  }
+
+  const response = await fetch(`${apiBase}/browser/close`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ workspaceId: Number(workspaceId) || 0, dirId }),
+  })
+
+  const data = await response.json()
+  if (data.code !== 0) {
+    throw new Error(data.msg || 'RoxyBrowser API error')
   }
 }
 
@@ -445,9 +516,11 @@ async function startRoxy(options, local) {
   await saveState({
     cdpEndpoint: wsEndpoint,
     browserType: 'roxy',
+    owner: 'browsecraft',
     activeTabIndex: 0,
     activeFrameIndex: null,
     roxyApi: apiBase,
+    roxyWorkspaceId: Number(workspaceId) || 0,
     roxyWindowId: dirId,
     scope: local ? 'local' : 'global',
     startedAt: new Date().toISOString(),
