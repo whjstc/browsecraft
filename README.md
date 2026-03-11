@@ -462,6 +462,9 @@ browsecraft/
 ## Release References
 
 - npm publish helper: `scripts/publish-npm.sh` (supports `NPM_OTP=123456`)
+- preflight checks: `scripts/release-preflight.sh`
+- one-command release loop: `npm run release:loop`
+- export platform assets: `npm run release:skill`
 - Skill assets: `SKILL.md`, `packages/skill/`
 
 ## License
