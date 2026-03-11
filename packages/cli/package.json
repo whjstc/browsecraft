@@ -1,6 +1,6 @@
 {
   "name": "browsecraft-cli",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "description": "Browser automation CLI for AI agents - minimal token cost (~68 tokens)",
   "bin": {

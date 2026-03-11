@@ -8,7 +8,7 @@ Browser automation CLI for repeatable AI-agent workflows.
 
 - Persistent browser architecture with stateless commands
 - Ref-based snapshot flow (`snapshot` → `click-ref` / `fill-ref`)
-- RoxyBrowser and Camoufox integration
+- RoxyBrowser integration
 - Multi-session isolation (`--session`)
 - Tab and frame management
 - Template cache commands
@@ -33,8 +33,8 @@ browsecraft close
 
 ## Lifecycle
 
-- `browsecraft start [--type chrome|roxy|camoufox]`
-- `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
+- `browsecraft start [--type chrome|roxy]`
+- `browsecraft connect <endpoint> --type <chrome|roxy>`
 - `browsecraft status`
 - `browsecraft doctor [--type chrome|roxy|camoufox]`
 - `browsecraft cleanup-profiles`
@@ -47,7 +47,7 @@ browsecraft close
 ### Close vs Disconnect
 
 - `browsecraft close` ends the current BrowseCraft-managed session.
-- For local Chrome and Camoufox started by BrowseCraft, `close` shuts down the browser process.
+- For local Chrome started by BrowseCraft, `close` shuts down the browser process.
 - For RoxyBrowser windows started by BrowseCraft, `close` calls the Roxy API to close that window.
 - For browsers attached via `browsecraft connect`, `close` falls back to a session disconnect and leaves the external browser running.
 - `browsecraft stop` is kept as a backward-compatible alias of `close`.
@@ -55,9 +55,10 @@ browsecraft close
 
 ### Doctor
 
-- `browsecraft doctor` runs environment checks for session state, Chrome, RoxyBrowser, Camoufox, and leftover profile directories.
+- `browsecraft doctor` runs environment checks for session state, Chrome, RoxyBrowser, and leftover profile directories.
 - Each section prints `OK` / `WARN` / `FAIL` / `SKIP` plus a concrete `Next:` command when action is needed.
 - Use `browsecraft doctor --type roxy` when you only want to verify the Roxy path.
+- `browsecraft doctor --type camoufox` explains that built-in Camoufox support has been removed and points you to `camoufox-cli`.
 
 ### Cleanup Profiles
 
@@ -100,9 +101,8 @@ browsecraft close
 - `--global`: use `~/.browsecraft/` (default)
 - `--session`: isolate state per session
 - `--json`: JSON output wrapper for all commands
-- `--type`: `chrome|roxy|camoufox`
+- `--type`: `chrome|roxy`
 - `--headless`
-- `--camoufox-path`
 - `BROWSECRAFT_MAX_TABS` (env): max tabs per context (default `8`)
 
 ## Exit Codes

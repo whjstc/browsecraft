@@ -24,7 +24,7 @@ The project ships in multiple forms:
 
 ## Highlights
 
-- Multi-browser support: `RoxyBrowser`, `Camoufox`, `Chrome`, `Firefox`, `Edge`
+- Multi-browser support: `RoxyBrowser`, `Chrome`, `Firefox`, `Edge`
 - Multiple interfaces: `CLI` / `HTTP API` / `MCP Server` / `Skill assets`
 - Memory-oriented automation: template cache + ref-based snapshot flow
 - Low-token operational model for agent usage
@@ -55,7 +55,6 @@ BrowseCraft CLI / API / MCP
           |
           +--> Chrome / Edge / other CDP endpoints
           +--> RoxyBrowser API -> launched browser window -> CDP
-          +--> Camoufox launcher -> Firefox-compatible endpoint
 ```
 
 The automation model is built around persistent browser state:
@@ -237,47 +236,9 @@ Lifecycle note:
 
 ### Camoufox
 
-Camoufox is useful when you want a Firefox-family anti-detection backend instead of Chromium.
+BrowseCraft no longer ships built-in Camoufox support.
 
-BrowseCraft currently supports Camoufox in two ways:
-
-1. launch Camoufox for you with `browsecraft start --type camoufox`
-2. connect to an existing Camoufox websocket endpoint with `browsecraft connect <ws-endpoint> --type camoufox`
-
-Setup options:
-
-- install the Camoufox package and fetch the browser binary
-- or provide the binary path explicitly with `--camoufox-path`
-
-```bash
-browsecraft start --type camoufox
-browsecraft connect ws://127.0.0.1:9222/... --type camoufox
-```
-
-If you want to run Camoufox as a remote server yourself, the official docs expose:
-
-```bash
-python -m camoufox server
-```
-
-That server prints a websocket endpoint such as:
-
-```text
-ws://localhost:1234/hello
-```
-
-Then you can attach BrowseCraft to it:
-
-```bash
-browsecraft connect ws://localhost:1234/hello --type camoufox
-```
-
-Important caveats:
-
-- the Camoufox remote server is marked experimental in the official docs
-- one server uses one browser instance, so fingerprints do not rotate between sessions automatically
-- BrowseCraft does not currently expose a first-class `--profile` abstraction for Camoufox like it now does for Chrome
-- if you need durable login state with Camoufox today, the safer pattern is to keep a long-lived Camoufox instance or manage that lifecycle on the Camoufox side
+If you need Camoufox, use a dedicated tool such as [`camoufox-cli`](https://github.com/Bin-Huang/camoufox-cli) instead of BrowseCraft.
 
 ### Chrome (existing debug endpoint)
 
@@ -460,7 +421,6 @@ Implemented now:
 - template cache
 - YAML workflow execution
 - RoxyBrowser integration
-- Camoufox integration
 
 Not finished yet:
 

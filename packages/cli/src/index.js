@@ -126,10 +126,9 @@ const helpText = `
 BrowseCraft - Browser automation for AI agents (with memory)
 
 Lifecycle:
-  browsecraft start [--type chrome|roxy|camoufox] [--headless] [--profile NAME] [--profile-dir PATH]
+  browsecraft start [--type chrome|roxy] [--headless] [--profile NAME] [--profile-dir PATH]
   browsecraft start --type roxy [--roxy-api URL] [--roxy-token KEY] [--roxy-window-id ID]
-  browsecraft start --type camoufox [--camoufox-path /path/to/camoufox]
-  browsecraft connect <endpoint> [--type chrome|camoufox|roxy]
+  browsecraft connect <endpoint> [--type chrome|roxy]
   browsecraft close
   browsecraft stop        Alias of close
   browsecraft disconnect
@@ -238,7 +237,7 @@ Options:
   --global  Use global session (~/.browsecraft/) [default]
   --session Session name for multi-session isolation
   --json    Output command result as JSON
-  --type    Browser type (chrome|roxy|camoufox)
+  --type    Browser type (chrome|roxy)
   --headless  Run in headless mode
   --profile   Fixed Chrome profile name for persistent login state
   --profile-dir  Explicit Chrome user-data-dir path for persistent login state
@@ -246,7 +245,6 @@ Options:
   --roxy-token    RoxyBrowser API token
   --roxy-window-id    RoxyBrowser window/dir ID to open
   --roxy-workspace-id RoxyBrowser workspace ID
-  --camoufox-path     Camoufox executable path (or use CAMOUFOX_PATH env)
   BROWSECRAFT_MAX_TABS  Max tabs kept per context (default: 8, 0 means unlimited)
   BROWSECRAFT_PROFILE_DIR  Explicit Chrome user-data-dir path
 
@@ -277,7 +275,6 @@ async function main() {
       'roxy-token': { type: 'string' },
       'roxy-window-id': { type: 'string' },
       'roxy-workspace-id': { type: 'string' },
-      'camoufox-path': { type: 'string' },
     },
     allowPositionals: true,
     strict: false,

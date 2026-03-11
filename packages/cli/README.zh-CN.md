@@ -8,7 +8,7 @@
 
 - 持久浏览器架构 + 无状态命令
 - 基于 ref 的快照流（`snapshot` → `click-ref` / `fill-ref`）
-- 集成 RoxyBrowser 与 Camoufox
+- 集成 RoxyBrowser
 - 多会话隔离（`--session`）
 - 标签页与 frame 管理
 - 模板缓存命令
@@ -33,8 +33,8 @@ browsecraft close
 
 ## 生命周期命令
 
-- `browsecraft start [--type chrome|roxy|camoufox]`
-- `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
+- `browsecraft start [--type chrome|roxy]`
+- `browsecraft connect <endpoint> --type <chrome|roxy>`
 - `browsecraft status`
 - `browsecraft doctor [--type chrome|roxy|camoufox]`
 - `browsecraft cleanup-profiles`
@@ -47,7 +47,7 @@ browsecraft close
 ### `close` 与 `disconnect` 的区别
 
 - `browsecraft close` 用于结束当前由 BrowseCraft 管理的会话。
-- 对 BrowseCraft 自己启动的本地 Chrome 和 Camoufox，`close` 会真正关闭浏览器进程。
+- 对 BrowseCraft 自己启动的本地 Chrome，`close` 会真正关闭浏览器进程。
 - 对 BrowseCraft 自己启动的 RoxyBrowser 窗口，`close` 会调用 Roxy API 真正关闭该窗口。
 - 对通过 `browsecraft connect` 连接的外部浏览器，`close` 会退化为断开当前会话，不会关闭外部浏览器。
 - `browsecraft stop` 保留为 `close` 的兼容别名。
@@ -55,9 +55,10 @@ browsecraft close
 
 ### `doctor`
 
-- `browsecraft doctor` 会检查当前会话、Chrome、RoxyBrowser、Camoufox 以及残留的 profile 目录。
+- `browsecraft doctor` 会检查当前会话、Chrome、RoxyBrowser 以及残留的 profile 目录。
 - 每个检查项都会输出 `OK` / `WARN` / `FAIL` / `SKIP`，并在需要处理时给出具体的 `Next:` 命令。
 - 如果只想检查某个后端，可以用 `browsecraft doctor --type roxy` 这类形式。
+- `browsecraft doctor --type camoufox` 会明确提示：BrowseCraft 已移除内建 Camoufox 支持，请改用 `camoufox-cli`。
 
 ### `cleanup-profiles`
 
@@ -100,9 +101,8 @@ browsecraft close
 - `--global`：使用 `~/.browsecraft/`（默认）
 - `--session`：按会话隔离状态
 - `--json`：所有命令统一 JSON 包装输出
-- `--type`：`chrome|roxy|camoufox`
+- `--type`：`chrome|roxy`
 - `--headless`
-- `--camoufox-path`
 - `BROWSECRAFT_MAX_TABS`（环境变量）：每个上下文最大标签页（默认 `8`）
 
 ## 退出码

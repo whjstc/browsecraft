@@ -5,7 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 
 import { saveState, loadState } from '../src/state.js'
-import { stop, resolveRoxyStopConfig, terminateManagedProcess, cleanupTransientProfile, inspectProfiles, cleanupProfiles } from '../src/commands/lifecycle.js'
+import { stop, connect, start, resolveRoxyStopConfig, terminateManagedProcess, cleanupTransientProfile, inspectProfiles, cleanupProfiles } from '../src/commands/lifecycle.js'
 
 test('resolveRoxyStopConfig prefers state api and window identity', () => {
   process.env.ROXY_API = 'http://127.0.0.1:59999'
@@ -23,6 +23,20 @@ test('resolveRoxyStopConfig prefers state api and window identity', () => {
     workspaceId: 42,
     dirId: 'dir-123',
   })
+})
+
+test('start rejects camoufox backend with migration hint', async () => {
+  await assert.rejects(
+    () => start([], { type: 'camoufox' }),
+    /Camoufox support has been removed from BrowseCraft\. Use camoufox-cli instead\./
+  )
+})
+
+test('connect rejects camoufox backend with migration hint', async () => {
+  await assert.rejects(
+    () => connect(['ws://localhost:1234/test'], { type: 'camoufox' }),
+    /Camoufox support has been removed from BrowseCraft\. Use camoufox-cli instead\./
+  )
 })
 
 test('stop closes roxy window via api and clears local state', async () => {
