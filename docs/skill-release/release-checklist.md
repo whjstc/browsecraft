@@ -2,10 +2,10 @@
 
 ## 0. 发布前统一检查
 
-- [ ] `packages/skill/prompt.md` 已更新到最新能力边界
+- [ ] `skills/browsecraft/` 已更新到最新能力边界
 - [ ] README 未夸大未实现能力
 - [ ] 至少 1 个可复现 demo 可完整跑通
-- [ ] 执行 `npm run release:skill` 生成 `packages/skill/dist/*`
+- [ ] 执行 `npm run release:skill` 生成 `dist/skill/*`
 
 ## 1. skills.sh（首发渠道）
 

@@ -2,12 +2,12 @@
 
 | 平台 | 是否需登录 | 核心提交物 | 安装方式（用户侧） | 备注 |
 |------|------------|------------|-------------------|------|
-| skills.sh | 否（公开仓库可直接安装） | `SKILL.md` / 仓库路径 / 简介 | `npx skills add <owner/repo>` | 先作为首发渠道 |
+| skills.sh | 否（公开仓库可直接安装） | `SKILL.md` / skill 目录路径 / 简介 | `npx skills add <repo-tree-url>` | 优先使用 skill 子目录直链 |
 | clawhub.ai | 是 | 标题 / 描述 / Prompt / 示例 | 平台内安装 | 可能存在审核延迟 |
 | playbooks.com | 是 | 标题 / 描述 / Prompt / 示例 | 平台内导入运行 | 关注模板字段约束 |
 
 ## 统一策略
 
-1. `packages/skill/prompt.md` 作为单一真源（SSOT）。
+1. `skills/browsecraft/` 作为 skill 单一真源（SSOT）。
 2. 平台特有字段（标签、分类、封面图）只在各平台提交表单维护，不回写 prompt。
 3. 每次发布必须记录三个链接：技能页、安装页、示例页。

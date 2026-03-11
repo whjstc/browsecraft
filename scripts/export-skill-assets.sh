@@ -4,10 +4,11 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-SKILL_DIR="packages/skill"
-DIST_DIR="$SKILL_DIR/dist"
+SKILL_DIR="skills/browsecraft"
+DIST_DIR="dist/skill"
 PROMPT_FILE="$SKILL_DIR/prompt.md"
 EXAMPLE_FILE="$SKILL_DIR/examples/linkedin-outreach.md"
+ENTRY_FILE="$SKILL_DIR/SKILL.md"
 
 if [[ ! -f "$PROMPT_FILE" ]]; then
   echo "Missing prompt file: $PROMPT_FILE" >&2
@@ -18,14 +19,14 @@ mkdir -p "$DIST_DIR"
 
 cp "$PROMPT_FILE" "$DIST_DIR/prompt.md"
 cp "$EXAMPLE_FILE" "$DIST_DIR/example-linkedin-outreach.md"
-cp "SKILL.md" "$DIST_DIR/SKILL.md"
+cp "$ENTRY_FILE" "$DIST_DIR/SKILL.md"
 
 cat > "$DIST_DIR/skills-sh-submission.md" <<'MD'
 # skills.sh Submission Draft
 
 - Name: BrowseCraft
 - Repo: https://github.com/whjstc/browsecraft
-- Install: npx skills add whjstc/browsecraft
+- Install: npx skills add https://github.com/whjstc/browsecraft --skill browsecraft
 - Entry: SKILL.md
 
 ## Prompt

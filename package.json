@@ -10,7 +10,6 @@
     "packages/*"
   ],
   "files": [
-    "SKILL.md",
     "README.md",
     "README.zh-CN.md",
     "package.json",
@@ -27,8 +26,7 @@
     "packages/mcp-server/README.md",
     "packages/mcp-server/README.zh-CN.md",
     "packages/mcp-server/src/**",
-    "packages/skill/prompt.md",
-    "packages/skill/examples/**",
+    "skills/browsecraft/**",
     "scripts/build.sh",
     "scripts/export-skill-assets.sh",
     "scripts/publish-npm.sh",

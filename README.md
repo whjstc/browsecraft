@@ -97,6 +97,20 @@ browsecraft stop
 npm install -g browsecraft-cli
 ```
 
+### Agent Skill
+
+Browse all skills in the repository and choose interactively:
+
+```bash
+npx skills add https://github.com/whjstc/browsecraft
+```
+
+Install BrowseCraft directly by name:
+
+```bash
+npx skills add https://github.com/whjstc/browsecraft --skill browsecraft
+```
+
 ### Monorepo Development
 
 ```bash
@@ -470,7 +484,7 @@ browsecraft/
 - preflight checks: `scripts/release-preflight.sh`
 - one-command release loop: `npm run release:loop`
 - export platform assets: `npm run release:skill`
-- Skill assets: `SKILL.md`, `packages/skill/`
+- Skill assets: `skills/browsecraft/` (release maintenance docs live in `docs/skill-release/`)
 
 ## License
 

@@ -7,6 +7,6 @@
 
 对外分发目录只保留：
 
-- 根目录 `SKILL.md`
-- `packages/skill/prompt.md`
-- `packages/skill/examples/`
+- `skills/browsecraft/SKILL.md`
+- `skills/browsecraft/prompt.md`
+- `skills/browsecraft/examples/`

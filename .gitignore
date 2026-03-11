@@ -1,9 +1,13 @@
 # Dependencies
 node_modules/
 /dist
+/dist/skill/
 /packages/skill/dist/
 /build
 /out
+.agent/
+.agents/
+.claude/
 
 # State & Cache
 .browsecraft/
