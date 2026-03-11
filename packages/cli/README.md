@@ -28,7 +28,7 @@ browsecraft open https://example.com
 browsecraft snapshot -i -c -d 6
 browsecraft click-ref e2
 browsecraft screenshot result.png
-browsecraft stop
+browsecraft close
 ```
 
 ## Lifecycle
@@ -36,18 +36,27 @@ browsecraft stop
 - `browsecraft start [--type chrome|roxy|camoufox]`
 - `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
 - `browsecraft status`
-- `browsecraft stop`
+- `browsecraft doctor [--type chrome|roxy|camoufox]`
+- `browsecraft close`
+- `browsecraft stop` (alias of `close`)
 - `browsecraft disconnect`
 - `browsecraft roxy-list`
 - `browsecraft roxy-doctor`
 
-### Stop vs Disconnect
+### Close vs Disconnect
 
-- `browsecraft stop` ends the current BrowseCraft-managed session.
-- For local Chrome and Camoufox started by BrowseCraft, `stop` shuts down the browser process.
-- For RoxyBrowser windows started by BrowseCraft, `stop` calls the Roxy API to close that window.
-- For browsers attached via `browsecraft connect`, `stop` falls back to a session disconnect and leaves the external browser running.
+- `browsecraft close` ends the current BrowseCraft-managed session.
+- For local Chrome and Camoufox started by BrowseCraft, `close` shuts down the browser process.
+- For RoxyBrowser windows started by BrowseCraft, `close` calls the Roxy API to close that window.
+- For browsers attached via `browsecraft connect`, `close` falls back to a session disconnect and leaves the external browser running.
+- `browsecraft stop` is kept as a backward-compatible alias of `close`.
 - `browsecraft disconnect` always clears the current session without attempting to close the underlying browser/window.
+
+### Doctor
+
+- `browsecraft doctor` runs environment checks for session state, Chrome, RoxyBrowser, Camoufox, and leftover profile directories.
+- Each section prints `OK` / `WARN` / `FAIL` / `SKIP` plus a concrete `Next:` command when action is needed.
+- Use `browsecraft doctor --type roxy` when you only want to verify the Roxy path.
 
 ## Snapshot
 

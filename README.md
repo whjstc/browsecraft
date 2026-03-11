@@ -68,6 +68,8 @@ The automation model is built around persistent browser state:
 
 That is why the tool is better suited to repeatable tasks than pure one-shot browsing.
 
+For environment checks, use `browsecraft doctor`. It verifies session state, local browser availability, backend-specific prerequisites, and leftover profile directories, then prints concrete next steps.
+
 ## Core Concepts
 
 - `Session`: isolates state files so multiple tasks can run independently
@@ -86,7 +88,7 @@ browsecraft open https://example.com
 browsecraft snapshot -i -c -d 6 > page.yaml
 browsecraft click-ref e2
 browsecraft screenshot result.png
-browsecraft stop
+browsecraft close
 ```
 
 ## Installation
@@ -220,7 +222,8 @@ browsecraft snapshot
 
 Lifecycle note:
 
-- If the RoxyBrowser window was started by `browsecraft start --type roxy`, then `browsecraft stop` closes that Roxy window.
+- If the RoxyBrowser window was started by `browsecraft start --type roxy`, then `browsecraft close` closes that Roxy window.
+- `browsecraft stop` is kept as a backward-compatible alias of `browsecraft close`.
 - If you attached to an already-running browser with `browsecraft connect`, use `browsecraft disconnect` when you only want to detach the session.
 
 `browsecraft roxy-list` intentionally does not print a websocket endpoint for every window. That would require opening windows as a side effect. Instead, it prints the durable identifiers and a copy-pasteable `browsecraft start --type roxy ...` command for each window.

@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import path from 'node:path'
-import { getChromeProfileDir, resolveChromeDataDir } from '../src/commands/lifecycle.js'
+import { getChromeProfileDir, resolveChromeDataDir, resolveChromeDataDirInfo } from '../src/commands/lifecycle.js'
 
 const fakePath = { join: path.join, resolve: path.resolve }
 const fakeOs = { homedir: () => '/tmp/browsecraft-home' }
@@ -34,5 +34,25 @@ test('resolveChromeDataDir falls back to named profile', () => {
   assert.equal(
     resolveChromeDataDir({ profile: 'sales' }, fakePath, fakeOs),
     '/tmp/browsecraft-home/.browsecraft/user-data/profile-sales'
+  )
+})
+
+test('resolveChromeDataDirInfo marks named profiles as persistent', () => {
+  assert.deepEqual(
+    resolveChromeDataDirInfo({ profile: 'sales' }, fakePath, fakeOs, 9555),
+    {
+      dataDir: '/tmp/browsecraft-home/.browsecraft/user-data/profile-sales',
+      transientProfile: false,
+    }
+  )
+})
+
+test('resolveChromeDataDirInfo marks default generated profiles as transient', () => {
+  assert.deepEqual(
+    resolveChromeDataDirInfo({}, fakePath, fakeOs, 9555),
+    {
+      dataDir: '/tmp/browsecraft-home/.browsecraft/user-data/profile-9555',
+      transientProfile: true,
+    }
   )
 })

@@ -28,7 +28,7 @@ browsecraft open https://example.com
 browsecraft snapshot -i -c -d 6
 browsecraft click-ref e2
 browsecraft screenshot result.png
-browsecraft stop
+browsecraft close
 ```
 
 ## 生命周期命令
@@ -36,18 +36,27 @@ browsecraft stop
 - `browsecraft start [--type chrome|roxy|camoufox]`
 - `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
 - `browsecraft status`
-- `browsecraft stop`
+- `browsecraft doctor [--type chrome|roxy|camoufox]`
+- `browsecraft close`
+- `browsecraft stop`（`close` 的别名）
 - `browsecraft disconnect`
 - `browsecraft roxy-list`
 - `browsecraft roxy-doctor`
 
-### `stop` 与 `disconnect` 的区别
+### `close` 与 `disconnect` 的区别
 
-- `browsecraft stop` 用于结束当前由 BrowseCraft 管理的会话。
-- 对 BrowseCraft 自己启动的本地 Chrome 和 Camoufox，`stop` 会真正关闭浏览器进程。
-- 对 BrowseCraft 自己启动的 RoxyBrowser 窗口，`stop` 会调用 Roxy API 真正关闭该窗口。
-- 对通过 `browsecraft connect` 连接的外部浏览器，`stop` 会退化为断开当前会话，不会关闭外部浏览器。
+- `browsecraft close` 用于结束当前由 BrowseCraft 管理的会话。
+- 对 BrowseCraft 自己启动的本地 Chrome 和 Camoufox，`close` 会真正关闭浏览器进程。
+- 对 BrowseCraft 自己启动的 RoxyBrowser 窗口，`close` 会调用 Roxy API 真正关闭该窗口。
+- 对通过 `browsecraft connect` 连接的外部浏览器，`close` 会退化为断开当前会话，不会关闭外部浏览器。
+- `browsecraft stop` 保留为 `close` 的兼容别名。
 - `browsecraft disconnect` 始终只清理当前会话，不尝试关闭底层浏览器或窗口。
+
+### `doctor`
+
+- `browsecraft doctor` 会检查当前会话、Chrome、RoxyBrowser、Camoufox 以及残留的 profile 目录。
+- 每个检查项都会输出 `OK` / `WARN` / `FAIL` / `SKIP`，并在需要处理时给出具体的 `Next:` 命令。
+- 如果只想检查某个后端，可以用 `browsecraft doctor --type roxy` 这类形式。
 
 ## 快照命令
 

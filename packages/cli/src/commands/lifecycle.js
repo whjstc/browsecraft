@@ -21,6 +21,46 @@ export function resolveChromeDataDir(options, pathModule, osModule) {
   return getChromeProfileDir(options.profile, pathModule, osModule)
 }
 
+export function resolveChromeDataDirInfo(options, pathModule, osModule, cdpPort) {
+  const namedDir = resolveChromeDataDir(options, pathModule, osModule)
+  if (namedDir) {
+    return {
+      dataDir: namedDir,
+      transientProfile: false,
+    }
+  }
+
+  return {
+    dataDir: pathModule.join(osModule.homedir(), '.browsecraft', 'user-data', `profile-${cdpPort}`),
+    transientProfile: true,
+  }
+}
+
+export async function findChromePath(execSync, accessFn) {
+  if (process.platform === 'darwin') {
+    const paths = [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
+      '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    ]
+    for (const candidate of paths) {
+      try {
+        await accessFn(candidate)
+        return candidate
+      } catch {}
+    }
+    return null
+  }
+
+  if (process.platform === 'linux') {
+    try {
+      return execSync('which google-chrome || which chromium-browser || which chromium', { encoding: 'utf-8' }).trim() || null
+    } catch {}
+  }
+
+  return null
+}
+
 /**
  * 启动浏览器
  */
@@ -64,32 +104,13 @@ export async function start(args, options) {
   }
 
   // 查找 Chrome 路径
-  let chromePath
-  if (process.platform === 'darwin') {
-    const paths = [
-      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
-      '/Applications/Chromium.app/Contents/MacOS/Chromium',
-    ]
-    for (const p of paths) {
-      try {
-        await import('node:fs/promises').then(fs => fs.access(p))
-        chromePath = p
-        break
-      } catch {}
-    }
-  } else if (process.platform === 'linux') {
-    try {
-      chromePath = execSync('which google-chrome || which chromium-browser || which chromium', { encoding: 'utf-8' }).trim()
-    } catch {}
-  }
+  const chromePath = await findChromePath(execSync, async (candidate) => import('node:fs/promises').then(fs => fs.access(candidate)))
 
   if (!chromePath) {
     throw new Error('Chrome not found. Install Chrome or specify --cdp-endpoint.')
   }
 
-  const dataDir = resolveChromeDataDir(options, path, os)
-    || path.join(os.homedir(), '.browsecraft', 'user-data', `profile-${cdpPort}`)
+  const { dataDir, transientProfile } = resolveChromeDataDirInfo(options, path, os, cdpPort)
   await import('node:fs/promises').then(fs => fs.mkdir(dataDir, { recursive: true }))
 
   // 启动 Chrome
@@ -137,6 +158,7 @@ export async function start(args, options) {
     activeFrameIndex: null,
     pid: child.pid,
     dataDir,
+    transientProfile,
     scope: local ? 'local' : 'global',
     startedAt: new Date().toISOString(),
   }, local)
@@ -252,6 +274,7 @@ export async function stop(args, options) {
 
     await closeManagedBrowser(state)
     await deleteState(local)
+    await cleanupTransientProfile(state)
     console.log('Browser stopped')
   } catch (error) {
     throw new Error(`Failed to stop browser: ${error.message}`)
@@ -333,20 +356,55 @@ function roxyConfig(options) {
 }
 
 export async function closeManagedBrowser(state) {
+  if (state.pid) {
+    try {
+      await terminateManagedProcess(state.pid)
+      return
+    } catch {}
+  }
+
   try {
     const browser = await connectByState(state, 5000)
     await browser.close()
     return
   } catch {}
 
-  if (state.pid) {
-    try {
-      process.kill(state.pid)
-      return
-    } catch {}
+  throw new Error('unable to reach managed browser process')
+}
+
+export async function terminateManagedProcess(pid, killFn = process.kill) {
+  const probes = 12
+
+  try {
+    killFn(pid, 'SIGTERM')
+  } catch (error) {
+    if (error?.code !== 'ESRCH') throw error
+    return
   }
 
-  throw new Error('unable to reach managed browser process')
+  for (let index = 0; index < probes; index += 1) {
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    try {
+      killFn(pid, 0)
+    } catch (error) {
+      if (error?.code === 'ESRCH') return
+      throw error
+    }
+  }
+
+  killFn(pid, 'SIGKILL')
+}
+
+export async function cleanupTransientProfile(state, rmFn) {
+  if (!state?.transientProfile || !state?.dataDir) return
+
+  const remove = rmFn || (async (target) => {
+    const fs = await import('node:fs/promises')
+    await fs.rm(target, { recursive: true, force: true })
+  })
+
+  await remove(state.dataDir)
 }
 
 export function resolveRoxyStopConfig(state, options) {
@@ -564,6 +622,36 @@ export async function roxyList(args, options) {
 }
 
 export async function roxyDoctor(args, options) {
+  const report = await inspectRoxy(options)
+
+  const ok = report.checks.every(item => item.ok)
+
+  console.log(`Roxy API: ${apiBase}`)
+  console.log(`Token: ${apiToken ? 'provided' : 'missing'}`)
+  for (const item of report.checks) {
+    console.log(`${item.ok ? 'OK' : 'FAIL'}  ${item.name}  ${item.detail}`)
+  }
+
+  if (!ok) {
+    console.log('\nSuggested next steps:')
+    let stepNumber = 1
+    console.log(`  ${stepNumber}. Configure API: browsecraft config set ROXY_API ${quoteShell(apiBase)}`)
+    stepNumber += 1
+    if (!apiToken) {
+      console.log(`  ${stepNumber}. Configure token: browsecraft config set ROXY_TOKEN YOUR_TOKEN`)
+      stepNumber += 1
+    }
+    console.log(`  ${stepNumber}. List windows: browsecraft roxy-list --roxy-api ${quoteShell(apiBase)}${apiToken ? ` --roxy-token ${quoteShell(apiToken)}` : ''}`)
+    stepNumber += 1
+    if (targetWorkspace && browsers.length > 0) {
+      console.log(`  ${stepNumber}. Start one window: ${buildRoxyStartHint(apiBase, apiToken || 'YOUR_TOKEN', targetWorkspace.id, browsers[0].dirId)}`)
+    }
+  }
+
+  return report
+}
+
+export async function inspectRoxy(options) {
   const { apiBase, apiToken } = roxyConfig(options)
   const headers = {
     'Content-Type': 'application/json',
@@ -679,31 +767,183 @@ export async function roxyDoctor(args, options) {
     })
   }
 
-  const ok = report.checks.every(item => item.ok)
-
-  console.log(`Roxy API: ${apiBase}`)
-  console.log(`Token: ${apiToken ? 'provided' : 'missing'}`)
-  for (const item of report.checks) {
-    console.log(`${item.ok ? 'OK' : 'FAIL'}  ${item.name}  ${item.detail}`)
-  }
-
-  if (!ok) {
-    console.log('\nSuggested next steps:')
-    let stepNumber = 1
-    console.log(`  ${stepNumber}. Configure API: browsecraft config set ROXY_API ${quoteShell(apiBase)}`)
-    stepNumber += 1
-    if (!apiToken) {
-      console.log(`  ${stepNumber}. Configure token: browsecraft config set ROXY_TOKEN YOUR_TOKEN`)
-      stepNumber += 1
-    }
-    console.log(`  ${stepNumber}. List windows: browsecraft roxy-list --roxy-api ${quoteShell(apiBase)}${apiToken ? ` --roxy-token ${quoteShell(apiToken)}` : ''}`)
-    stepNumber += 1
-    if (targetWorkspace && browsers.length > 0) {
-      console.log(`  ${stepNumber}. Start one window: ${buildRoxyStartHint(apiBase, apiToken || 'YOUR_TOKEN', targetWorkspace.id, browsers[0].dirId)}`)
-    }
-  }
-
   return report
+}
+
+export async function inspectSession(local = false) {
+  const state = await loadState(local)
+  if (!state) {
+    return {
+      present: false,
+      status: 'ok',
+      detail: 'no active browser session',
+      next: null,
+      state: null,
+    }
+  }
+
+  try {
+    const browser = await connectByState(state, 3000)
+    const contexts = browser.contexts()
+    const pages = contexts.length > 0 ? contexts[0].pages().length : 0
+    await browser.close().catch(() => {})
+    return {
+      present: true,
+      status: 'ok',
+      detail: `${state.browserType} session running (${pages} page${pages === 1 ? '' : 's'})`,
+      next: state.owner === 'external' ? 'browsecraft disconnect' : 'browsecraft close',
+      state,
+    }
+  } catch {
+    return {
+      present: true,
+      status: 'warn',
+      detail: `${state.browserType} session state exists but browser is disconnected`,
+      next: state.owner === 'external' ? 'browsecraft disconnect' : 'browsecraft close',
+      state,
+    }
+  }
+}
+
+export async function inspectProfiles(local = false) {
+  const path = await import('node:path')
+  const os = await import('node:os')
+  const fs = await import('node:fs/promises')
+  const baseDir = local
+    ? path.join(process.cwd(), '.browsecraft', 'user-data')
+    : path.join(os.homedir(), '.browsecraft', 'user-data')
+
+  try {
+    const entries = await fs.readdir(baseDir, { withFileTypes: true })
+    const dirs = entries.filter(entry => entry.isDirectory()).map(entry => entry.name)
+    const transient = dirs.filter(name => /^profile-\d+$/.test(name))
+    const named = dirs.filter(name => name.startsWith('profile-') && !/^profile-\d+$/.test(name))
+    return {
+      baseDir,
+      total: dirs.length,
+      transientCount: transient.length,
+      namedCount: named.length,
+      next: transient.length > 0 ? `find ${baseDir} -maxdepth 1 -type d -name 'profile-*'` : null,
+    }
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return {
+        baseDir,
+        total: 0,
+        transientCount: 0,
+        namedCount: 0,
+        next: null,
+      }
+    }
+    throw error
+  }
+}
+
+export async function doctor(args, options) {
+  const local = options.local || false
+  const targetType = options.type || 'auto'
+  const sections = []
+  const fs = await import('node:fs/promises')
+  const path = await import('node:path')
+  const packageJsonPath = path.resolve(import.meta.dirname, '..', '..', 'package.json')
+  const version = await fs.readFile(packageJsonPath, 'utf8')
+    .then(content => JSON.parse(content).version || 'unknown')
+    .catch(() => 'unknown')
+
+  console.log('BrowseCraft Doctor')
+  console.log(`Version: ${version}`)
+  console.log(`Mode: ${local ? 'local' : 'global'} session scope`)
+
+  console.log('\nChecking session state...')
+  const session = await inspectSession(local)
+  sections.push({
+    title: 'Session',
+    status: session.status,
+    detail: session.detail,
+    next: session.next,
+  })
+
+  if (targetType === 'auto' || targetType === 'chrome') {
+    console.log('Checking Chrome availability...')
+    const { execSync } = await import('node:child_process')
+    const fs = await import('node:fs/promises')
+    const chromePath = await findChromePath(execSync, async (candidate) => fs.access(candidate))
+    sections.push({
+      title: 'Chrome',
+      status: chromePath ? 'ok' : 'fail',
+      detail: chromePath || 'Chrome/Chromium not found',
+      next: chromePath ? null : 'Install Chrome or use browsecraft connect <endpoint> --type chrome',
+    })
+  } else {
+    sections.push({
+      title: 'Chrome',
+      status: 'skip',
+      detail: `skipped for --type ${targetType}`,
+      next: null,
+    })
+  }
+
+  if (targetType === 'auto' || targetType === 'camoufox') {
+    console.log('Checking Camoufox availability...')
+    const { execSync } = await import('node:child_process')
+    const fs = await import('node:fs/promises')
+    const camoufoxPath = await resolveCamoufoxPath(options, execSync, fs)
+    sections.push({
+      title: 'Camoufox',
+      status: camoufoxPath ? 'ok' : 'skip',
+      detail: camoufoxPath || 'not found',
+      next: camoufoxPath ? null : 'Install Camoufox or set CAMOUFOX_PATH / --camoufox-path when needed',
+    })
+  } else {
+    sections.push({
+      title: 'Camoufox',
+      status: 'skip',
+      detail: `skipped for --type ${targetType}`,
+      next: null,
+    })
+  }
+
+  if (targetType === 'auto' || targetType === 'roxy') {
+    console.log('Checking RoxyBrowser API...')
+    const roxy = await inspectRoxy(options)
+    const roxyOk = roxy.checks.every(item => item.ok)
+    const firstFailure = roxy.checks.find(item => !item.ok) || null
+    sections.push({
+      title: 'RoxyBrowser',
+      status: roxyOk ? 'ok' : 'fail',
+      detail: roxyOk
+        ? `${roxy.checks.length} checks passed against ${roxy.apiBase}`
+        : `${firstFailure?.name || 'check_failed'}: ${firstFailure?.detail || 'unknown error'}`,
+      next: roxyOk ? null : `browsecraft roxy-doctor${options.type ? ` --type ${options.type}` : ''}`,
+    })
+  } else {
+    sections.push({
+      title: 'RoxyBrowser',
+      status: 'skip',
+      detail: `skipped for --type ${targetType}`,
+      next: null,
+    })
+  }
+
+  console.log('Checking profile directories...')
+  const profiles = await inspectProfiles(local)
+  sections.push({
+    title: 'Profiles',
+    status: profiles.transientCount > 0 ? 'warn' : 'ok',
+    detail: `${profiles.total} total, ${profiles.transientCount} transient, ${profiles.namedCount} named`,
+    next: profiles.next,
+  })
+
+  console.log('')
+  for (const section of sections) {
+    const label = section.status.toUpperCase().padEnd(4, ' ')
+    console.log(`${label} ${section.title}  ${section.detail}`)
+    if (section.next) {
+      console.log(`      Next: ${section.next}`)
+    }
+  }
+
+  return { version, targetType, sections }
 }
 
 /**

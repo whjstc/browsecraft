@@ -27,8 +27,10 @@ import * as workflow from './commands/workflow.js'
 const commands = {
   // 生命周期 (5)
   start: lifecycle.start,
+  close: lifecycle.stop,
   stop: lifecycle.stop,
   disconnect: lifecycle.disconnect,
+  doctor: lifecycle.doctor,
   connect: lifecycle.connect,
   status: lifecycle.status,
   'roxy-list': lifecycle.roxyList,
@@ -127,8 +129,10 @@ Lifecycle:
   browsecraft start --type roxy [--roxy-api URL] [--roxy-token KEY] [--roxy-window-id ID]
   browsecraft start --type camoufox [--camoufox-path /path/to/camoufox]
   browsecraft connect <endpoint> [--type chrome|camoufox|roxy]
-  browsecraft stop
+  browsecraft close
+  browsecraft stop        Alias of close
   browsecraft disconnect
+  browsecraft doctor [--type chrome|roxy|camoufox]
   browsecraft status
   browsecraft roxy-list [--roxy-api URL] [--roxy-token KEY]
   browsecraft roxy-doctor [--roxy-api URL] [--roxy-token KEY] [--roxy-workspace-id ID] [--roxy-window-id ID]
