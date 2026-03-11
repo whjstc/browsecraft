@@ -5,6 +5,22 @@
 import { chromium, firefox } from 'playwright-core'
 import { saveState, loadState, deleteState } from '../state.js'
 
+export function getChromeProfileDir(profileName, pathModule, osModule) {
+  if (!profileName) return null
+  const normalized = profileName.trim().replace(/[^a-zA-Z0-9_-]/g, '_')
+  if (!normalized) return null
+  return pathModule.join(osModule.homedir(), '.browsecraft', 'user-data', `profile-${normalized}`)
+}
+
+export function resolveChromeDataDir(options, pathModule, osModule) {
+  const explicitDir = options['profile-dir'] || process.env.BROWSECRAFT_PROFILE_DIR || null
+  if (explicitDir) {
+    return pathModule.resolve(explicitDir)
+  }
+
+  return getChromeProfileDir(options.profile, pathModule, osModule)
+}
+
 /**
  * 启动浏览器
  */
@@ -43,6 +59,10 @@ export async function start(args, options) {
   const os = await import('node:os')
   const path = await import('node:path')
 
+  if (options.profile && options['profile-dir']) {
+    throw new Error('Use either --profile or --profile-dir, not both')
+  }
+
   // 查找 Chrome 路径
   let chromePath
   if (process.platform === 'darwin') {
@@ -68,8 +88,8 @@ export async function start(args, options) {
     throw new Error('Chrome not found. Install Chrome or specify --cdp-endpoint.')
   }
 
-  // 创建用户数据目录
-  const dataDir = path.join(os.homedir(), '.browsecraft', 'user-data', `profile-${cdpPort}`)
+  const dataDir = resolveChromeDataDir(options, path, os)
+    || path.join(os.homedir(), '.browsecraft', 'user-data', `profile-${cdpPort}`)
   await import('node:fs/promises').then(fs => fs.mkdir(dataDir, { recursive: true }))
 
   // 启动 Chrome
