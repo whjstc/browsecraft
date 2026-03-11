@@ -146,6 +146,9 @@ browsecraft/
 ## 发布参考
 
 - npm 发布脚本：`scripts/publish-npm.sh`（支持 `NPM_OTP=123456`）
+- 发布预检：`scripts/release-preflight.sh`
+- 一键发布准备：`npm run release:loop`
+- 导出平台资产：`npm run release:skill`
 - Skill 资产：`SKILL.md`、`packages/skill/`
 
 ## 许可证

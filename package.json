@@ -12,7 +12,9 @@
   "scripts": {
     "dev": "node packages/cli/src/index.js",
     "build": "bash scripts/build.sh",
-    "test": "echo 'TODO: tests'"
+    "test": "npm run test --workspaces --if-present",
+    "release:skill": "bash scripts/export-skill-assets.sh",
+    "release:loop": "bash scripts/release-loop.sh"
   },
   "engines": {
     "node": ">=18"

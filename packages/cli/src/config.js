@@ -17,32 +17,65 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
 
-const GLOBAL_DIR = join(homedir(), '.browsecraft')
-const GLOBAL_ENV_FILE = join(GLOBAL_DIR, '.env')
-const GLOBAL_CONFIG_FILE = join(GLOBAL_DIR, 'config.json')
-const LOCAL_ENV_FILE = join(process.cwd(), '.browsecraft', '.env')
+function resolveConfigPaths(options = {}) {
+  const cwd = options.cwd ?? process.cwd()
+  const home = options.homeDir ?? homedir()
+  const globalDir = join(home, '.browsecraft')
+
+  return {
+    globalDir,
+    globalEnvFile: join(globalDir, '.env'),
+    globalConfigFile: join(globalDir, 'config.json'),
+    localEnvFile: join(cwd, '.browsecraft', '.env'),
+  }
+}
+
+/**
+ * 解析 .env 文本内容，返回 key-value 对象
+ */
+export function parseEnvContent(content) {
+  const result = {}
+
+  for (const rawLine of content.split('\n')) {
+    const line = rawLine.trim()
+    if (!line || line.startsWith('#')) continue
+
+    const normalized = line.startsWith('export ')
+      ? line.slice('export '.length).trim()
+      : line
+
+    const eqIdx = normalized.indexOf('=')
+    if (eqIdx < 1) continue
+
+    const key = normalized.slice(0, eqIdx).trim()
+    if (!key) continue
+
+    let value = normalized.slice(eqIdx + 1).trim()
+
+    // 去除包裹引号
+    if ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1)
+    } else {
+      // 非引号值支持内联注释：FOO=bar # comment
+      const hashIdx = value.indexOf(' #')
+      if (hashIdx >= 0) {
+        value = value.slice(0, hashIdx).trim()
+      }
+    }
+
+    result[key] = value
+  }
+
+  return result
+}
 
 /**
  * 解析 .env 文件，返回 key-value 对象
  */
 function parseEnvFile(filePath) {
-  const result = {}
   const content = readFileSync(filePath, 'utf-8')
-  for (const rawLine of content.split('\n')) {
-    const line = rawLine.trim()
-    if (!line || line.startsWith('#')) continue
-    const eqIdx = line.indexOf('=')
-    if (eqIdx < 1) continue
-    const key = line.slice(0, eqIdx).trim()
-    let value = line.slice(eqIdx + 1).trim()
-    // 去除引号
-    if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
-      value = value.slice(1, -1)
-    }
-    result[key] = value
-  }
-  return result
+  return parseEnvContent(content)
 }
 
 /**
@@ -60,21 +93,23 @@ function applyToEnv(obj) {
  * 加载所有配置源，合并到 process.env
  * 优先级：shell env > 项目 .env > 全局 .env > config.json
  */
-export async function loadConfig() {
+export async function loadConfig(options = {}) {
+  const paths = resolveConfigPaths(options)
+
   // 3. 项目级 .env
-  if (existsSync(LOCAL_ENV_FILE)) {
-    try { applyToEnv(parseEnvFile(LOCAL_ENV_FILE)) } catch {}
+  if (existsSync(paths.localEnvFile)) {
+    try { applyToEnv(parseEnvFile(paths.localEnvFile)) } catch {}
   }
 
   // 4. 全局 .env
-  if (existsSync(GLOBAL_ENV_FILE)) {
-    try { applyToEnv(parseEnvFile(GLOBAL_ENV_FILE)) } catch {}
+  if (existsSync(paths.globalEnvFile)) {
+    try { applyToEnv(parseEnvFile(paths.globalEnvFile)) } catch {}
   }
 
   // 5. config.json
-  if (existsSync(GLOBAL_CONFIG_FILE)) {
+  if (existsSync(paths.globalConfigFile)) {
     try {
-      const cfg = JSON.parse(readFileSync(GLOBAL_CONFIG_FILE, 'utf-8'))
+      const cfg = JSON.parse(readFileSync(paths.globalConfigFile, 'utf-8'))
       applyToEnv(cfg)
     } catch {}
   }
@@ -83,10 +118,12 @@ export async function loadConfig() {
 /**
  * 读取 config.json（仅 browsecraft 自己管理的配置）
  */
-export function readConfigFile() {
-  if (!existsSync(GLOBAL_CONFIG_FILE)) return {}
+export function readConfigFile(options = {}) {
+  const { globalConfigFile } = resolveConfigPaths(options)
+
+  if (!existsSync(globalConfigFile)) return {}
   try {
-    return JSON.parse(readFileSync(GLOBAL_CONFIG_FILE, 'utf-8'))
+    return JSON.parse(readFileSync(globalConfigFile, 'utf-8'))
   } catch {
     return {}
   }
@@ -95,9 +132,10 @@ export function readConfigFile() {
 /**
  * 写入 config.json
  */
-export function writeConfigFile(cfg) {
-  mkdirSync(GLOBAL_DIR, { recursive: true })
-  writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(cfg, null, 2) + '\n', 'utf-8')
+export function writeConfigFile(cfg, options = {}) {
+  const { globalDir, globalConfigFile } = resolveConfigPaths(options)
+  mkdirSync(globalDir, { recursive: true })
+  writeFileSync(globalConfigFile, JSON.stringify(cfg, null, 2) + '\n', 'utf-8')
 }
 
 /**
