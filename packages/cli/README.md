@@ -37,6 +37,7 @@ browsecraft close
 - `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
 - `browsecraft status`
 - `browsecraft doctor [--type chrome|roxy|camoufox]`
+- `browsecraft cleanup-profiles`
 - `browsecraft close`
 - `browsecraft stop` (alias of `close`)
 - `browsecraft disconnect`
@@ -57,6 +58,12 @@ browsecraft close
 - `browsecraft doctor` runs environment checks for session state, Chrome, RoxyBrowser, Camoufox, and leftover profile directories.
 - Each section prints `OK` / `WARN` / `FAIL` / `SKIP` plus a concrete `Next:` command when action is needed.
 - Use `browsecraft doctor --type roxy` when you only want to verify the Roxy path.
+
+### Cleanup Profiles
+
+- `browsecraft cleanup-profiles` removes leftover transient `profile-<port>` directories.
+- Named profiles created by `--profile` or `--profile-dir` are preserved.
+- The command also skips the active session's current profile if one is still in use.
 
 ## Snapshot
 

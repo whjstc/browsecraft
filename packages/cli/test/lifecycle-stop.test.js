@@ -5,7 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 
 import { saveState, loadState } from '../src/state.js'
-import { stop, resolveRoxyStopConfig, terminateManagedProcess, cleanupTransientProfile, inspectProfiles } from '../src/commands/lifecycle.js'
+import { stop, resolveRoxyStopConfig, terminateManagedProcess, cleanupTransientProfile, inspectProfiles, cleanupProfiles } from '../src/commands/lifecycle.js'
 
 test('resolveRoxyStopConfig prefers state api and window identity', () => {
   process.env.ROXY_API = 'http://127.0.0.1:59999'
@@ -151,6 +151,54 @@ test('inspectProfiles separates transient and named profiles', async () => {
     assert.equal(report.namedCount, 2)
   } finally {
     process.chdir(previousCwd)
+    await fs.rm(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('cleanupProfiles removes transient profiles but preserves named and active profiles', async () => {
+  const previousCwd = process.cwd()
+  const previousSession = process.env.BROWSECRAFT_SESSION
+  const previousLog = console.log
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'browsecraft-cleanup-'))
+  const userDataDir = path.join(tempDir, '.browsecraft', 'user-data')
+  const activeDir = path.join(userDataDir, 'profile-9222')
+  const staleDir = path.join(userDataDir, 'profile-9333')
+  const namedDir = path.join(userDataDir, 'profile-sales')
+  const logs = []
+
+  process.env.BROWSECRAFT_SESSION = 'cleanup-profiles-test'
+  process.chdir(tempDir)
+  console.log = (message) => logs.push(message)
+
+  try {
+    await fs.mkdir(activeDir, { recursive: true })
+    await fs.mkdir(staleDir, { recursive: true })
+    await fs.mkdir(namedDir, { recursive: true })
+
+    await saveState({
+      cdpEndpoint: 'ws://127.0.0.1:9222/devtools/browser/test',
+      browserType: 'chrome',
+      owner: 'browsecraft',
+      dataDir: activeDir,
+      transientProfile: true,
+    }, true)
+
+    const expectedRemoved = await fs.realpath(staleDir).catch(() => staleDir)
+    const expectedActive = await fs.realpath(activeDir).catch(() => activeDir)
+    const result = await cleanupProfiles([], { local: true })
+
+    assert.deepEqual(result.removed, [expectedRemoved])
+    assert.deepEqual(result.skipped, [expectedActive])
+    await assert.doesNotReject(() => fs.access(activeDir))
+    await assert.rejects(() => fs.access(staleDir))
+    await assert.doesNotReject(() => fs.access(namedDir))
+    const expectedUserDataDir = await fs.realpath(userDataDir).catch(() => userDataDir)
+    assert.equal(logs[0], `Scanning transient profiles in ${expectedUserDataDir}...`)
+  } finally {
+    console.log = previousLog
+    process.chdir(previousCwd)
+    if (previousSession === undefined) delete process.env.BROWSECRAFT_SESSION
+    else process.env.BROWSECRAFT_SESSION = previousSession
     await fs.rm(tempDir, { recursive: true, force: true })
   }
 })

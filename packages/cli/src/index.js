@@ -31,6 +31,7 @@ const commands = {
   stop: lifecycle.stop,
   disconnect: lifecycle.disconnect,
   doctor: lifecycle.doctor,
+  'cleanup-profiles': lifecycle.cleanupProfiles,
   connect: lifecycle.connect,
   status: lifecycle.status,
   'roxy-list': lifecycle.roxyList,
@@ -133,6 +134,7 @@ Lifecycle:
   browsecraft stop        Alias of close
   browsecraft disconnect
   browsecraft doctor [--type chrome|roxy|camoufox]
+  browsecraft cleanup-profiles
   browsecraft status
   browsecraft roxy-list [--roxy-api URL] [--roxy-token KEY]
   browsecraft roxy-doctor [--roxy-api URL] [--roxy-token KEY] [--roxy-workspace-id ID] [--roxy-window-id ID]

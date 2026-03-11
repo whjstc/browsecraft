@@ -823,6 +823,8 @@ export async function inspectProfiles(local = false) {
       total: dirs.length,
       transientCount: transient.length,
       namedCount: named.length,
+      transientDirs: transient.map(name => path.join(baseDir, name)),
+      namedDirs: named.map(name => path.join(baseDir, name)),
       next: transient.length > 0 ? `find ${baseDir} -maxdepth 1 -type d -name 'profile-*'` : null,
     }
   } catch (error) {
@@ -832,11 +834,66 @@ export async function inspectProfiles(local = false) {
         total: 0,
         transientCount: 0,
         namedCount: 0,
+        transientDirs: [],
+        namedDirs: [],
         next: null,
       }
     }
     throw error
   }
+}
+
+export async function cleanupProfiles(args, options) {
+  const local = options.local || false
+  const profiles = await inspectProfiles(local)
+  const state = await loadState(local)
+  const fs = await import('node:fs/promises')
+  const canonicalize = async (target) => {
+    if (!target) return null
+    try {
+      return await fs.realpath(target)
+    } catch {
+      return target
+    }
+  }
+  const activeDataDir = await canonicalize(state?.dataDir || null)
+
+  console.log(`Scanning transient profiles in ${profiles.baseDir}...`)
+
+  if (profiles.transientDirs.length === 0) {
+    console.log('No transient profiles found')
+    return {
+      removed: [],
+      skipped: activeDataDir ? [activeDataDir] : [],
+    }
+  }
+
+  const removed = []
+  const skipped = []
+
+  for (const dir of profiles.transientDirs) {
+    const canonicalDir = await canonicalize(dir)
+    if (canonicalDir === activeDataDir) {
+      skipped.push(dir)
+      continue
+    }
+
+    await fs.rm(dir, { recursive: true, force: true })
+    removed.push(dir)
+    console.log(`Removed: ${dir}`)
+  }
+
+  if (removed.length === 0) {
+    console.log('No transient profiles removed')
+  } else {
+    console.log(`Removed ${removed.length} transient profile(s)`)
+  }
+
+  if (skipped.length > 0) {
+    console.log(`Skipped active profile: ${skipped[0]}`)
+  }
+
+  return { removed, skipped, scanned: profiles.transientDirs }
 }
 
 export async function doctor(args, options) {
@@ -914,7 +971,7 @@ export async function doctor(args, options) {
       detail: roxyOk
         ? `${roxy.checks.length} checks passed against ${roxy.apiBase}`
         : `${firstFailure?.name || 'check_failed'}: ${firstFailure?.detail || 'unknown error'}`,
-      next: roxyOk ? null : `browsecraft roxy-doctor${options.type ? ` --type ${options.type}` : ''}`,
+      next: roxyOk ? null : 'browsecraft roxy-doctor',
     })
   } else {
     sections.push({

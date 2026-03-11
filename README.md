@@ -68,7 +68,7 @@ The automation model is built around persistent browser state:
 
 That is why the tool is better suited to repeatable tasks than pure one-shot browsing.
 
-For environment checks, use `browsecraft doctor`. It verifies session state, local browser availability, backend-specific prerequisites, and leftover profile directories, then prints concrete next steps.
+For environment checks, use `browsecraft doctor`. It verifies session state, local browser availability, backend-specific prerequisites, and leftover profile directories, then prints concrete next steps. To remove leftover transient browser directories without touching named profiles, use `browsecraft cleanup-profiles`.
 
 ## Core Concepts
 

@@ -37,6 +37,7 @@ browsecraft close
 - `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
 - `browsecraft status`
 - `browsecraft doctor [--type chrome|roxy|camoufox]`
+- `browsecraft cleanup-profiles`
 - `browsecraft close`
 - `browsecraft stop`（`close` 的别名）
 - `browsecraft disconnect`
@@ -57,6 +58,12 @@ browsecraft close
 - `browsecraft doctor` 会检查当前会话、Chrome、RoxyBrowser、Camoufox 以及残留的 profile 目录。
 - 每个检查项都会输出 `OK` / `WARN` / `FAIL` / `SKIP`，并在需要处理时给出具体的 `Next:` 命令。
 - 如果只想检查某个后端，可以用 `browsecraft doctor --type roxy` 这类形式。
+
+### `cleanup-profiles`
+
+- `browsecraft cleanup-profiles` 用来清理遗留的临时 `profile-<端口>` 目录。
+- 通过 `--profile` 或 `--profile-dir` 使用的命名 profile 不会被删除。
+- 如果当前还有活动会话正在使用某个临时 profile，该目录也会被跳过。
 
 ## 快照命令
 
