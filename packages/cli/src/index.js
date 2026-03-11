@@ -31,6 +31,7 @@ const commands = {
   connect: lifecycle.connect,
   status: lifecycle.status,
   'roxy-list': lifecycle.roxyList,
+  'roxy-doctor': lifecycle.roxyDoctor,
 
   // 导航 (4)
   open: navigation.open,
@@ -128,6 +129,7 @@ Lifecycle:
   browsecraft stop
   browsecraft status
   browsecraft roxy-list [--roxy-api URL] [--roxy-token KEY]
+  browsecraft roxy-doctor [--roxy-api URL] [--roxy-token KEY] [--roxy-workspace-id ID] [--roxy-window-id ID]
 
 Navigation:
   browsecraft open <url>

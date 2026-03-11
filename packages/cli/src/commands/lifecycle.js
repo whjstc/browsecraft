@@ -307,6 +307,36 @@ function roxyConfig(options) {
   }
 }
 
+export function quoteShell(value) {
+  if (value === null || value === undefined) return "''"
+  const text = String(value)
+  if (/^[a-zA-Z0-9_./:-]+$/.test(text)) return text
+  return `'${text.replace(/'/g, `'\"'\"'`)}'`
+}
+
+export function buildRoxyStartHint(apiBase, apiToken, workspaceId, dirId) {
+  const parts = [
+    'browsecraft',
+    'start',
+    '--type',
+    'roxy',
+    '--roxy-api',
+    quoteShell(apiBase),
+  ]
+
+  if (apiToken) {
+    parts.push('--roxy-token', quoteShell(apiToken))
+  }
+  if (workspaceId !== null && workspaceId !== undefined) {
+    parts.push('--roxy-workspace-id', String(workspaceId))
+  }
+  if (dirId) {
+    parts.push('--roxy-window-id', quoteShell(dirId))
+  }
+
+  return parts.join(' ')
+}
+
 /**
  * 自动发现 RoxyBrowser 工作区列表
  */
@@ -454,9 +484,153 @@ export async function roxyList(args, options) {
         const name = b.windowName || '(unnamed)'
         const status = b.status !== undefined ? `  status=${b.status}` : ''
         console.log(`  [${b.dirId}] ${name}${status}`)
+        console.log(`    start: ${buildRoxyStartHint(apiBase, apiToken, ws.id, b.dirId)}`)
       }
     }
   }
+}
+
+export async function roxyDoctor(args, options) {
+  const { apiBase, apiToken } = roxyConfig(options)
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(apiToken ? { Authorization: apiToken } : {}),
+  }
+
+  const report = {
+    apiBase,
+    tokenProvided: Boolean(apiToken),
+    checks: [],
+  }
+
+  try {
+    const response = await fetch(apiBase, { method: 'GET' })
+    report.checks.push({
+      name: 'api_reachable',
+      ok: response.ok || response.status < 500,
+      detail: `HTTP ${response.status}`,
+    })
+  } catch (error) {
+    report.checks.push({
+      name: 'api_reachable',
+      ok: false,
+      detail: error.message,
+    })
+  }
+
+  let workspaces = []
+  try {
+    workspaces = await fetchRoxyWorkspaces(apiBase, headers)
+    report.checks.push({
+      name: 'workspace_list',
+      ok: true,
+      detail: `${workspaces.length} workspace(s)`,
+    })
+  } catch (error) {
+    report.checks.push({
+      name: 'workspace_list',
+      ok: false,
+      detail: error.message,
+    })
+  }
+
+  const requestedWorkspaceId = options['roxy-workspace-id'] || process.env.ROXY_WORKSPACE_ID || null
+  const requestedDirId = options['roxy-window-id'] || process.env.ROXY_WINDOW_ID || null
+
+  let targetWorkspace = null
+  if (workspaces.length > 0) {
+    if (requestedWorkspaceId) {
+      targetWorkspace = workspaces.find(item => String(item.id) === String(requestedWorkspaceId)) || null
+      report.checks.push({
+        name: 'workspace_selected',
+        ok: Boolean(targetWorkspace),
+        detail: targetWorkspace
+          ? `workspace ${targetWorkspace.workspaceName} (id=${targetWorkspace.id})`
+          : `workspace ${requestedWorkspaceId} not found`,
+      })
+    } else if (workspaces.length === 1) {
+      targetWorkspace = workspaces[0]
+      report.checks.push({
+        name: 'workspace_selected',
+        ok: true,
+        detail: `single workspace ${targetWorkspace.workspaceName} (id=${targetWorkspace.id})`,
+      })
+    } else {
+      report.checks.push({
+        name: 'workspace_selected',
+        ok: false,
+        detail: 'multiple workspaces found; set --roxy-workspace-id or ROXY_WORKSPACE_ID',
+      })
+    }
+  }
+
+  let browsers = []
+  if (targetWorkspace) {
+    try {
+      browsers = await fetchRoxyBrowsers(apiBase, headers, targetWorkspace.id)
+      report.checks.push({
+        name: 'window_list',
+        ok: true,
+        detail: `${browsers.length} window(s) in workspace ${targetWorkspace.id}`,
+      })
+    } catch (error) {
+      report.checks.push({
+        name: 'window_list',
+        ok: false,
+        detail: error.message,
+      })
+    }
+  }
+
+  if (targetWorkspace && requestedDirId) {
+    const browser = browsers.find(item => String(item.dirId) === String(requestedDirId)) || null
+    report.checks.push({
+      name: 'window_selected',
+      ok: Boolean(browser),
+      detail: browser
+        ? `window ${browser.windowName || '(unnamed)'} (dirId=${browser.dirId})`
+        : `window ${requestedDirId} not found in workspace ${targetWorkspace.id}`,
+    })
+  } else if (targetWorkspace && browsers.length === 1) {
+    const browser = browsers[0]
+    report.checks.push({
+      name: 'window_selected',
+      ok: true,
+      detail: `single window ${browser.windowName || '(unnamed)'} (dirId=${browser.dirId})`,
+    })
+  } else if (targetWorkspace && browsers.length > 1 && !requestedDirId) {
+    report.checks.push({
+      name: 'window_selected',
+      ok: false,
+      detail: 'multiple windows found; set --roxy-window-id or ROXY_WINDOW_ID',
+    })
+  }
+
+  const ok = report.checks.every(item => item.ok)
+
+  console.log(`Roxy API: ${apiBase}`)
+  console.log(`Token: ${apiToken ? 'provided' : 'missing'}`)
+  for (const item of report.checks) {
+    console.log(`${item.ok ? 'OK' : 'FAIL'}  ${item.name}  ${item.detail}`)
+  }
+
+  if (!ok) {
+    console.log('\nSuggested next steps:')
+    let stepNumber = 1
+    console.log(`  ${stepNumber}. Configure API: browsecraft config set ROXY_API ${quoteShell(apiBase)}`)
+    stepNumber += 1
+    if (!apiToken) {
+      console.log(`  ${stepNumber}. Configure token: browsecraft config set ROXY_TOKEN YOUR_TOKEN`)
+      stepNumber += 1
+    }
+    console.log(`  ${stepNumber}. List windows: browsecraft roxy-list --roxy-api ${quoteShell(apiBase)}${apiToken ? ` --roxy-token ${quoteShell(apiToken)}` : ''}`)
+    stepNumber += 1
+    if (targetWorkspace && browsers.length > 0) {
+      console.log(`  ${stepNumber}. Start one window: ${buildRoxyStartHint(apiBase, apiToken || 'YOUR_TOKEN', targetWorkspace.id, browsers[0].dirId)}`)
+    }
+  }
+
+  return report
 }
 
 /**

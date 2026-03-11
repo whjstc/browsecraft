@@ -141,7 +141,7 @@ browsecraft open https://example.com
 
 ```bash
 browsecraft --session lead-gen start
-browsecraft --session lead-gen open https://linkedin.com
+browsecraft --session lead-gen open https://crm.example.com
 browsecraft --session lead-gen snapshot
 ```
 
@@ -158,13 +158,17 @@ browsecraft --json get-title
 
 如果你需要指纹 Chromium、反检测能力、以及由 Roxy 自己维护的长期浏览器身份，RoxyBrowser 是更推荐的后端。
 
-在 BrowseCraft 接入 RoxyBrowser 之前，先完成这些前置步骤：
+在 BrowseCraft 接入 RoxyBrowser 之前，先在左侧边栏打开 `API & AI MCP` 页面，然后在 `API 设置` 区域确认这 3 个字段：
 
-1. 打开 RoxyBrowser。
-2. 进入 `API -> API Configuration`。
-3. 打开 API 开关。
-4. 复制 API Key。
-5. 确认本地 API 的 host 和 port。官方默认是 `http://127.0.0.1:50000`。
+1. `API 启用状态`：必须打开
+2. `API 密钥`：复制当前显示的密钥
+3. `端口设置`：确认界面里显示的 host 和 port，通常是 `127.0.0.1:50000`
+
+也就是说，BrowseCraft 的参数通常和这几个界面字段一一对应：
+
+- `--roxy-api` -> `端口设置`（默认一般是 `http://127.0.0.1:50000`）
+- `--roxy-token` -> `API 密钥`
+- `--roxy-window-id` -> 目标浏览器配置文件的 `dirId`，它不是这个 API 页面上的字段
 
 它和普通 Chrome 的关键差异：
 
@@ -193,11 +197,21 @@ browsecraft connect ws://127.0.0.1:54485/devtools/browser/xxx --type roxy
 典型流程：
 
 ```bash
+browsecraft roxy-doctor
 browsecraft roxy-list --roxy-api http://127.0.0.1:50000 --roxy-token YOUR_TOKEN
 browsecraft start --type roxy --roxy-api http://127.0.0.1:50000 --roxy-token YOUR_TOKEN --roxy-window-id YOUR_ID
 browsecraft open https://example.com
 browsecraft snapshot
 ```
+
+`browsecraft roxy-list` 故意不直接为每个窗口打印 websocket endpoint。因为真实 ws 往往需要调用打开窗口接口后才会返回，那样会让“列出窗口”这个只读命令产生副作用。它现在输出的是稳定标识，以及每个窗口对应的一条可复制 `browsecraft start --type roxy ...` 启动命令。
+
+更安全的发现命令是 `browsecraft roxy-doctor`。它会检查：
+
+- 本地 Roxy API 是否可达
+- token 是否有效
+- 目标 workspace 是否存在
+- 目标浏览器窗口是否存在
 
 ### Camoufox
 
@@ -293,7 +307,7 @@ export BROWSECRAFT_MAX_TABS=8
 ## 模板缓存命令
 
 ```bash
-browsecraft template learn "linkedin-login" "linkedin.com" email="input#username" submit="button[type=submit]"
+browsecraft template learn "crm-login" "crm.example.com" email="input#username" submit="button[type=submit]"
 browsecraft template list
 browsecraft template execute template_xxx email "user@example.com"
 browsecraft template delete template_xxx
@@ -304,27 +318,25 @@ browsecraft template delete template_xxx
 ## 工作流引擎（YAML）
 
 ```yaml
-name: LinkedIn Search
+name: CRM Dashboard Check
 vars:
-  keyword: founder shanghai saas
+  customer: acme
 steps:
   - action: open
-    url: https://www.linkedin.com
+    url: https://crm.example.com
   - action: fill
-    selector: input[role=combobox]
-    value: "{{keyword}}"
-  - action: press
-    key: Enter
+    selector: input[name=customer]
+    value: "{{customer}}"
   - action: wait-for
     selector: main
   - action: screenshot
-    path: linkedin-search.png
+    path: crm-dashboard.png
 ```
 
 ```bash
-browsecraft workflow validate workflows/linkedin.yml keyword="founder shanghai saas"
-browsecraft workflow dry-run workflows/linkedin.yml keyword="founder shanghai saas"
-browsecraft workflow run workflows/linkedin.yml keyword="founder shanghai saas"
+browsecraft workflow validate workflows/crm-dashboard.yml customer="acme"
+browsecraft workflow dry-run workflows/crm-dashboard.yml customer="acme"
+browsecraft workflow run workflows/crm-dashboard.yml customer="acme"
 ```
 
 推荐这样用：
@@ -398,8 +410,8 @@ browsecraft start --type chrome --profile crm
 例如：
 
 ```bash
-browsecraft --session sales start --type chrome --profile linkedin
-browsecraft --session sales open https://www.linkedin.com
+browsecraft --session sales start --type chrome --profile crm
+browsecraft --session sales open https://crm.example.com
 ```
 
 这样任务状态和浏览器身份是分开的，比把两者混在一个概念里更稳妥。

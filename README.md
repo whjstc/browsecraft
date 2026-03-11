@@ -141,7 +141,7 @@ browsecraft open https://example.com
 
 ```bash
 browsecraft --session lead-gen start
-browsecraft --session lead-gen open https://linkedin.com
+browsecraft --session lead-gen open https://crm.example.com
 browsecraft --session lead-gen snapshot
 ```
 
@@ -158,13 +158,17 @@ browsecraft --json get-title
 
 RoxyBrowser is the preferred backend when you need fingerprinted Chromium profiles, anti-detection settings, and long-lived browser identities managed by Roxy itself.
 
-Before using BrowseCraft with RoxyBrowser:
+Before using BrowseCraft with RoxyBrowser, open the left sidebar item `API & AI MCP`, then confirm these fields on the `API Settings` panel:
 
-1. Open RoxyBrowser.
-2. Go to `API -> API Configuration`.
-3. Enable the API switch.
-4. Copy the API key.
-5. Confirm the local API host and port. The official default is `http://127.0.0.1:50000`.
+1. `API Status`: enabled
+2. `API Key`: copy the displayed key
+3. `Port Settings`: confirm the host and port shown in the UI, typically `127.0.0.1:50000`
+
+In other words, the BrowseCraft flags usually map to the RoxyBrowser screen like this:
+
+- `--roxy-api` -> `Port Settings` (`http://127.0.0.1:50000` by default)
+- `--roxy-token` -> `API Key`
+- `--roxy-window-id` -> the target browser profile `dirId`, not the API screen itself
 
 Important behavior differences from plain Chrome:
 
@@ -193,11 +197,21 @@ browsecraft connect ws://127.0.0.1:54485/devtools/browser/xxx --type roxy
 Typical flow:
 
 ```bash
+browsecraft roxy-doctor
 browsecraft roxy-list --roxy-api http://127.0.0.1:50000 --roxy-token YOUR_TOKEN
 browsecraft start --type roxy --roxy-api http://127.0.0.1:50000 --roxy-token YOUR_TOKEN --roxy-window-id YOUR_ID
 browsecraft open https://example.com
 browsecraft snapshot
 ```
+
+`browsecraft roxy-list` intentionally does not print a websocket endpoint for every window. That would require opening windows as a side effect. Instead, it prints the durable identifiers and a copy-pasteable `browsecraft start --type roxy ...` command for each window.
+
+`browsecraft roxy-doctor` is the safer discovery command. It checks:
+
+- whether the local Roxy API is reachable
+- whether your token works
+- whether the selected workspace exists
+- whether the selected browser window exists
 
 ### Camoufox
 
@@ -293,7 +307,7 @@ This guard exists to prevent runaway tab creation from exhausting memory during 
 ## Template Cache CLI
 
 ```bash
-browsecraft template learn "linkedin-login" "linkedin.com" email="input#username" submit="button[type=submit]"
+browsecraft template learn "crm-login" "crm.example.com" email="input#username" submit="button[type=submit]"
 browsecraft template list
 browsecraft template execute template_xxx email "user@example.com"
 browsecraft template delete template_xxx
@@ -304,27 +318,25 @@ Templates are useful when the same site structure appears repeatedly and you wan
 ## Workflow Engine (YAML)
 
 ```yaml
-name: LinkedIn Search
+name: CRM Dashboard Check
 vars:
-  keyword: founder shanghai saas
+  customer: acme
 steps:
   - action: open
-    url: https://www.linkedin.com
+    url: https://crm.example.com
   - action: fill
-    selector: input[role=combobox]
-    value: "{{keyword}}"
-  - action: press
-    key: Enter
+    selector: input[name=customer]
+    value: "{{customer}}"
   - action: wait-for
     selector: main
   - action: screenshot
-    path: linkedin-search.png
+    path: crm-dashboard.png
 ```
 
 ```bash
-browsecraft workflow validate workflows/linkedin.yml keyword="founder shanghai saas"
-browsecraft workflow dry-run workflows/linkedin.yml keyword="founder shanghai saas"
-browsecraft workflow run workflows/linkedin.yml keyword="founder shanghai saas"
+browsecraft workflow validate workflows/crm-dashboard.yml customer="acme"
+browsecraft workflow dry-run workflows/crm-dashboard.yml customer="acme"
+browsecraft workflow run workflows/crm-dashboard.yml customer="acme"
 ```
 
 Use:
@@ -398,8 +410,8 @@ Recommended pattern:
 Example:
 
 ```bash
-browsecraft --session sales start --type chrome --profile linkedin
-browsecraft --session sales open https://www.linkedin.com
+browsecraft --session sales start --type chrome --profile crm
+browsecraft --session sales open https://crm.example.com
 ```
 
 This keeps operational state and browser identity separate, which is safer than overloading one concept for both.

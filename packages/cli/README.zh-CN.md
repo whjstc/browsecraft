@@ -37,6 +37,8 @@ browsecraft stop
 - `browsecraft connect <endpoint> --type <chrome|roxy|camoufox>`
 - `browsecraft status`
 - `browsecraft stop`
+- `browsecraft roxy-list`
+- `browsecraft roxy-doctor`
 
 ## 快照命令
 
